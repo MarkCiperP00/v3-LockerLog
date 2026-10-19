@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Request locker – LockerLog{% endblock %}
+{% block content %}
+<form method="post" class="max-w-md bg-white p-6 rounded-lg shadow space-y-4">
+  <h1 class="text-xl font-bold">Request locker {{ locker_id }}</h1>
+  <label class="block text-sm">Semester
+    <select id="sem" name="semester_id" required data-rate="{{ rate }}"
+            class="mt-1 w-full border rounded px-3 py-2">
+      <option value="">Choose semester</option>
+      {% for s in semesters %}
+        <option value="{{ s.semester_id }}">{{ s.school_year }} – Semester {{ s.term }} ({{ s.date_start }} to {{ s.date_end }})</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div id="preview" class="text-sm text-slate-600">Rate: ₱{{ rate }} per day</div>
+  <button class="w-full bg-blue-900 text-white py-2 rounded hover:bg-blue-800">Submit request</button>
+  <p class="text-xs text-slate-500">The fee is prorated from the approval date. Payment is made at the cashier. The system does not detect payment.</p>
+</form>
+{% endblock %}

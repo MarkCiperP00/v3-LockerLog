@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Requests – LockerLog{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-3">Pending requests</h1>
+<p class="text-sm text-slate-500 mb-3">No dates are typed in. On approval the system sets the dates from the semester and computes the fee.</p>
+<div class="bg-white rounded shadow overflow-x-auto">
+<table class="data w-full text-sm">
+  <tr><th>User</th><th>Locker</th><th>Semester</th><th>Waiting</th><th>Decision</th></tr>
+  {% for r in requests %}
+  <tr class="border-t {{ 'bg-red-50' if r.days_waiting > 3 }}">
+    <td>{{ r.name }} ({{ r.school_id }})</td>
+    <td>{{ r.locker_id }}</td>
+    <td>{{ r.school_year }} – Sem {{ r.term }}</td>
+    <td>{{ r.days_waiting }} day(s){{ ' – FLAGGED' if r.days_waiting > 3 }}</td>
+    <td class="flex gap-2">
+      <form method="post" action="/admin/requests/{{ r.request_id }}/approve" data-confirm="Approve this request?">
+        <button class="bg-green-700 text-white px-3 py-1 rounded">Approve</button></form>
+      <form method="post" action="/admin/requests/{{ r.request_id }}/reject" data-confirm="Reject this request?">
+        <button class="bg-red-700 text-white px-3 py-1 rounded">Reject</button></form>
+    </td>
+  </tr>
+  {% else %}<tr><td colspan="5" class="text-slate-500">No pending requests.</td></tr>
+  {% endfor %}
+</table></div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LockerLog{% endblock %}</title>
+  <!-- Development: Tailwind Play CDN. For final: build static/css/tailwind.css with the Tailwind CLI and link it here instead. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <nav class="bg-blue-900 text-white px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+    <a href="/" class="font-bold text-lg">LockerLog</a>
+    {% if me %}
+    <div class="flex flex-wrap gap-4 text-sm items-center">
+      {% if me.can("request_locker") %}
+        <a href="/lockers" class="hover:underline">Lockers</a>
+        <a href="/my-locker" class="hover:underline">My Locker</a>
+      {% elif me.can("manage_lockers") %}
+        <a href="/admin" class="hover:underline">Dashboard</a>
+        <a href="/admin/requests" class="hover:underline">Requests</a>
+        <a href="/admin/lockers" class="hover:underline">Lockers</a>
+        <a href="/admin/settings" class="hover:underline">Settings</a>
+        <a href="/admin/log" class="hover:underline">Log</a>
+      {% elif me.can("set_maintenance_status") %}
+        <a href="/maintenance" class="hover:underline">Maintenance</a>
+      {% endif %}
+      <span class="text-blue-200">{{ me.name }} ({{ me.ROLE }})</span>
+      <a class="underline" href="/logout">Log out</a>
+    </div>
+    {% endif %}
+  </nav>
+  <main class="max-w-6xl mx-auto p-6">
+    {% with msgs = get_flashed_messages() %}
+      {% for m in msgs %}
+        <div class="flash mb-4 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm">{{ m }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

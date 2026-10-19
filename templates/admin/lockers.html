@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Manage Lockers – LockerLog{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-3">Manage lockers</h1>
+<form method="post" class="bg-white rounded shadow p-4 mb-4 flex flex-wrap gap-3 items-end text-sm">
+  <input type="hidden" name="action" value="add">
+  <label>Locker ID<input name="locker_id" required class="block border rounded px-2 py-1"></label>
+  <label>Building<select name="building" class="block border rounded px-2 py-1">
+    <option>COECSA</option><option>Sotero</option><option>JPL</option></select></label>
+  <label>Floor<input name="floor" type="number" required class="block border rounded px-2 py-1 w-20"></label>
+  <button class="bg-blue-900 text-white px-4 py-1 rounded">Add locker</button>
+</form>
+<form method="get" class="flex flex-wrap gap-3 mb-4">
+  <select name="building" class="border rounded px-2 py-1">
+    <option value="">All buildings</option>
+    {% for b in ["COECSA","Sotero","JPL"] %}<option {{ "selected" if request.args.building==b }}>{{ b }}</option>{% endfor %}
+  </select>
+  <input name="floor" type="number" placeholder="Floor" value="{{ request.args.floor or '' }}" class="border rounded px-2 py-1 w-24">
+  <select name="status" class="border rounded px-2 py-1">
+    <option value="">Any status</option>
+    {% for s in ["Available","Reserved","Assigned","Expired","Under Maintenance"] %}
+      <option {{ "selected" if request.args.status==s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="bg-blue-900 text-white px-4 rounded">Filter</button>
+</form>
+<div class="bg-white rounded shadow overflow-x-auto">
+<table class="data w-full text-sm">
+  <tr><th>Locker</th><th>Building</th><th>Floor</th><th>Status</th><th>Holder</th><th>Ends</th><th>Actions</th></tr>
+  {% for l in lockers %}
+  <tr class="border-t {{ 'bg-red-50' if l.status == 'Expired' }}">
+    <td>{{ l.locker_id }}</td><td>{{ l.building }}</td><td>{{ l.floor }}</td><td>{{ l.status }}</td>
+    <td>{{ l.holder or '-' }}</td><td>{{ l.date_end or '-' }}</td>
+    <td class="flex gap-2">
+      {% if l.assignment_id %}
+      <form method="post" action="/admin/release/{{ l.assignment_id }}" data-confirm="Release this locker? No refund is given.">
+        <button class="bg-amber-600 text-white px-3 py-1 rounded">Release</button></form>
+      {% endif %}
+      {% if l.status == "Available" %}
+      <form method="post" data-confirm="Remove locker {{ l.locker_id }}?">
+        <input type="hidden" name="action" value="delete"><input type="hidden" name="locker_id" value="{{ l.locker_id }}">
+        <button class="bg-red-700 text-white px-3 py-1 rounded">Remove</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Lockers – LockerLog{% endblock %}
+{% block content %}
+{% set colors = {"Available":"bg-green-100 text-green-800","Reserved":"bg-yellow-100 text-yellow-800",
+                 "Assigned":"bg-blue-100 text-blue-800","Expired":"bg-red-100 text-red-800",
+                 "Under Maintenance":"bg-slate-200 text-slate-700"} %}
+<h1 class="text-xl font-bold mb-3">Locker availability</h1>
+<form method="get" class="flex flex-wrap gap-3 mb-4">
+  <select name="building" class="border rounded px-2 py-1">
+    <option value="">All buildings</option>
+    {% for b in ["COECSA","Sotero","JPL"] %}<option {{ "selected" if request.args.building==b }}>{{ b }}</option>{% endfor %}
+  </select>
+  <input name="floor" type="number" placeholder="Floor" value="{{ request.args.floor or '' }}" class="border rounded px-2 py-1 w-24">
+  <select name="status" class="border rounded px-2 py-1">
+    <option value="">Any status</option>
+    {% for s in ["Available","Reserved","Assigned","Expired","Under Maintenance"] %}
+      <option {{ "selected" if request.args.status==s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="bg-blue-900 text-white px-4 rounded">Filter</button>
+</form>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+  {% for l in lockers %}
+  <div class="bg-white rounded shadow p-3 text-sm">
+    <div class="font-semibold">{{ l.locker_id }}</div>
+    <div class="text-slate-500">{{ l.building }} · Floor {{ l.floor }}</div>
+    <span class="inline-block mt-1 px-2 py-0.5 rounded text-xs {{ colors[l.status] }}">{{ l.status }}</span>
+    {% if l.status == "Available" and user.can("request_locker") %}
+      <a href="/request/{{ l.locker_id }}" class="block mt-2 text-blue-700 underline">Request</a>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="col-span-full text-slate-500">No lockers match the filter.</p>
+  {% endfor %}
+</div>
+{% endblock %}

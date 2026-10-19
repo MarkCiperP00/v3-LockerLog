@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Locker – LockerLog{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-3">My Locker</h1>
+{% if asg %}
+<div class="bg-white rounded shadow p-5 max-w-md space-y-1 text-sm">
+  <div><span class="text-slate-500">Locker:</span> <b>{{ asg.locker_id }}</b></div>
+  <div><span class="text-slate-500">Semester:</span> {{ asg.school_year }} – Semester {{ asg.term }}</div>
+  <div><span class="text-slate-500">Start date:</span> {{ asg.date_start }}</div>
+  <div><span class="text-slate-500">Expiry date:</span> {{ asg.date_end }}</div>
+  <div><span class="text-slate-500">Rate:</span> ₱{{ asg.rate_per_day }} per day</div>
+  <div><span class="text-slate-500">Total fee:</span> <b>₱{{ asg.total_fee }}</b></div>
+  <div><span class="text-slate-500">Status:</span> {{ asg.status }}</div>
+  <p class="pt-2 text-xs text-slate-500">Please pay the total fee at the cashier or office.</p>
+  {% if asg.status == "Expired" %}
+    <p class="text-xs text-red-700">This assignment has expired. Ask the administrator to release it before renting another locker.</p>
+  {% endif %}
+</div>
+{% elif pending %}
+<div class="bg-white rounded shadow p-5 max-w-md text-sm space-y-2">
+  <p>Pending request for locker <b>{{ pending.locker_id }}</b> (submitted {{ pending.date_submitted }}).</p>
+  <form method="post" action="/cancel/{{ pending.request_id }}" data-confirm="Cancel this request?">
+    <button class="bg-red-700 text-white px-3 py-1 rounded">Cancel request</button>
+  </form>
+</div>
+{% else %}
+<p class="text-slate-600">You have no locker or pending request. <a class="text-blue-700 underline" href="/lockers">Browse lockers</a>.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – LockerLog{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-3">Administrator dashboard</h1>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+  {% for u in usage %}
+  <div class="bg-white rounded shadow p-4 text-center">
+    <div class="text-2xl font-bold">{{ u.n }}</div><div class="text-xs text-slate-500">{{ u.status }}</div>
+  </div>
+  {% endfor %}
+</div>
+<h2 class="font-semibold mb-2">Pending requests ({{ pending|length }})</h2>
+<div class="bg-white rounded shadow mb-6 overflow-x-auto">
+<table class="data w-full text-sm">
+  <tr><th>Request</th><th>User</th><th>Locker</th><th>Waiting</th></tr>
+  {% for r in pending %}
+  <tr class="border-t {{ 'bg-red-50' if r.days_waiting > 3 }}">
+    <td>{{ r.request_id }}</td><td>{{ r.school_id }}</td><td>{{ r.locker_id }}</td>
+    <td>{{ r.days_waiting }} day(s){{ ' – FLAGGED' if r.days_waiting > 3 }}</td>
+  </tr>
+  {% else %}<tr><td colspan="4" class="text-slate-500">No pending requests.</td></tr>
+  {% endfor %}
+</table></div>
+<h2 class="font-semibold mb-2">Recent activity</h2>
+<div class="bg-white rounded shadow overflow-x-auto">
+<table class="data w-full text-sm">
+  <tr><th>Time</th><th>User</th><th>Action</th><th>Locker</th><th>Rule blocked</th></tr>
+  {% for l in log %}
+  <tr class="border-t"><td>{{ l.logged_at }}</td><td>{{ l.school_id or '-' }}</td><td>{{ l.action }}</td><td>{{ l.locker_id or '-' }}</td><td>{{ l.rule_blocked or '' }}</td></tr>
+  {% endfor %}
+</table></div>
+{% endblock %}

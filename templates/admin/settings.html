@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Settings – LockerLog{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-3">Settings</h1>
+<form method="post" class="bg-white rounded shadow p-4 mb-6 max-w-sm text-sm space-y-3">
+  <h2 class="font-semibold">Daily rate</h2>
+  <label>Rate per day (₱)
+    <input name="rate_per_day" type="number" step="0.01" min="0.01" value="{{ rate }}" class="block border rounded px-2 py-1 w-full"></label>
+  <p class="text-xs text-slate-500">A new rate does not change existing assignments.</p>
+  <button class="bg-blue-900 text-white px-4 py-1 rounded">Save rate</button>
+</form>
+<form method="post" class="bg-white rounded shadow p-4 mb-6 max-w-xl text-sm grid grid-cols-2 gap-3">
+  <h2 class="font-semibold col-span-2">Add or update a semester</h2>
+  <label>Semester ID<input name="semester_id" placeholder="2026-2027-1" required class="block border rounded px-2 py-1 w-full"></label>
+  <label>School year<input name="school_year" placeholder="2026-2027" required class="block border rounded px-2 py-1 w-full"></label>
+  <label>Term<select name="term" class="block border rounded px-2 py-1 w-full"><option>1</option><option>2</option></select></label>
+  <span></span>
+  <label>Start date<input name="date_start" type="date" required class="block border rounded px-2 py-1 w-full"></label>
+  <label>End date<input name="date_end" type="date" required class="block border rounded px-2 py-1 w-full"></label>
+  <button class="bg-blue-900 text-white px-4 py-1 rounded col-span-2">Save semester</button>
+</form>
+<div class="bg-white rounded shadow overflow-x-auto max-w-xl">
+<table class="data w-full text-sm">
+  <tr><th>ID</th><th>School year</th><th>Term</th><th>Start</th><th>End</th></tr>
+  {% for s in semesters %}<tr class="border-t"><td>{{ s.semester_id }}</td><td>{{ s.school_year }}</td><td>{{ s.term }}</td><td>{{ s.date_start }}</td><td>{{ s.date_end }}</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

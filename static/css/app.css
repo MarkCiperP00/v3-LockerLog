@@ -1,0 +1,5 @@
+/* Small custom CSS on top of Tailwind */
+.flash { transition: opacity .4s ease; }
+.flash.hide { opacity: 0; }
+table.data th { text-align: left; font-weight: 600; background: #f1f5f9; }
+table.data th, table.data td { padding: .5rem .75rem; }
