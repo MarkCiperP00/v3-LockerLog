@@ -1,38 +1,144 @@
 # LockerLog – Locker Rental and Tracking System
 
-Flask + Jinja2 + Tailwind CSS + JavaScript, with MySQL (8.0.16 or later).
+LockerLog is a web application for renting and tracking school lockers. Students and staff can request an available locker, administrators approve or reject requests, and maintenance staff can mark lockers as unavailable. Every action is recorded in an activity log.
 
-## Run
+**Built with:** Python (Flask), Jinja2, Tailwind CSS, JavaScript, MySQL 8.0.16+
 
-```bash
-python -m venv venv
-venv\Scripts\activate            # Linux/Mac: source venv/bin/activate
-pip install -r requirements.txt
-mysql -u root -p < schema.sql    # creates the "lockerlog" database
-# edit config.py (or set DB_PASSWORD and SECRET_KEY as environment variables)
-python seed.py                   # 210 lockers, sample semesters, sample accounts
-flask --app app run --debug      # open http://127.0.0.1:5000
+---
+
+## Features
+
+- Browse lockers by building and floor (COECSA, Sotero, JPL – 210 lockers in total)
+- Submit, view, and cancel locker rental requests
+- Automatic fee computation (prorated daily rate)
+- Admin dashboard to approve or reject requests, release lockers, and change the daily rate
+- Maintenance page to mark lockers as *Under Maintenance*
+- Role-based access (Student, Professor/Staff, Maintenance, Administrator)
+- Activity log, including blocked attempts
+- Business rules enforced at the database level (for example, one pending request per user)
+
+---
+
+## Requirements
+
+| Software | Version | Download |
+|---|---|---|
+| Python | 3.10 or newer | https://www.python.org *(tick "Add Python to PATH" when installing)* |
+| MySQL Server | 8.0.16 or newer | https://dev.mysql.com/downloads/installer/ |
+
+This guide assumes MySQL runs locally with the `root` user and **no password**. If your MySQL has a password, see [Using a MySQL password](#using-a-mysql-password).
+
+---
+
+## Installation
+
+Open **PowerShell** and run the following steps in order.
+
+**1. Go to the project folder**
+
+```powershell
+cd path\to\LockerLog\lockerlog
 ```
 
-Sample accounts (from seed.py): `2025-2-00001` / `Student#123`, `EMP-0001` / `Prof#12345`, `MNT-0001` / `Maint#12345`, `ADM-0001` / `Admin#12345`.
+**2. Install the dependencies**
 
-## Structure
+```powershell
+pip install -r requirements.txt
+```
+
+**3. Create the database**
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -e "source schema.sql"
+```
+
+**4. Load the starting data** (210 lockers, 2 semesters, 4 sample accounts)
+
+```powershell
+python seed.py
+```
+
+The terminal should print `Seeded.`
+
+**5. Start the application**
+
+```powershell
+flask --app app run --debug
+```
+
+Open **http://127.0.0.1:5000** in your browser. Keep the PowerShell window open while using the app, and press `Ctrl + C` to stop it.
+
+---
+
+## Sample Accounts
+
+| Role | School ID | Password |
+|---|---|---|
+| Administrator | `ADM-0001` | `Admin#12345` |
+| Student | `2025-2-00001` | `Student#123` |
+| Professor/Staff | `EMP-0001` | `Prof#12345` |
+| Maintenance | `MNT-0001` | `Maint#12345` |
+
+---
+
+## Quick Demo
+
+1. Log in as the **Student**, choose an available locker, and submit a request.
+2. Log out and log in as the **Administrator**.
+3. Open **Requests** and approve the request.
+4. Open the **Activity Log** to see the recorded actions.
+
+---
+
+## Using a MySQL Password
+
+If your MySQL `root` user has a password:
+
+1. In Step 3, add `-p` after `-u root` and enter the password when prompted.
+2. Before Step 4 (and before starting the app), set the password for the current PowerShell window:
+
+```powershell
+$env:DB_PASSWORD = 'your-password'
+```
+
+Use single quotes. This setting is lost when the window is closed, so repeat it in every new window.
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| `Access denied for user 'root'` | MySQL has a password. See [Using a MySQL password](#using-a-mysql-password). |
+| `Can't connect to MySQL server` | MySQL is not running. Start it from `services.msc` (usually named `MySQL80`). |
+| `Unknown database 'lockerlog'` | Repeat Step 3. |
+| `ModuleNotFoundError` | Repeat Step 2. |
+| `flask` is not recognized | Run `python -m flask --app app run --debug` instead. |
+| Page appears unstyled | Check your internet connection. Tailwind CSS is loaded from a CDN. |
+| Invalid login with the correct password | The seed did not run. Repeat Step 4. |
+
+---
+
+## Project Structure
 
 | Path | Purpose |
 |---|---|
 | `app.py` | Flask routes and role checks |
-| `models.py` | User, Borrower, Student, ProfessorStaff, Maintenance, Administrator (OOP, polymorphism) |
-| `services/rentals.py` | Submit, approve, reject, cancel, release, expiry, maintenance (transactions) |
+| `models.py` | User classes: Student, ProfessorStaff, Maintenance, Administrator |
+| `services/rentals.py` | Request, approval, cancellation, release, expiry, and maintenance logic (database transactions) |
 | `services/fees.py` | Daily rate and fee computation |
-| `db.py`, `config.py` | MySQL connection and settings |
-| `schema.sql`, `seed.py` | Tables and starting data |
-| `templates/` | HTML (Jinja2) pages styled with Tailwind classes |
-| `static/css/app.css`, `static/js/app.js` | Custom CSS and JavaScript (fee preview, confirm dialogs) |
-| `docs/` | Proposal PDF and activity diagram |
+| `db.py`, `config.py` | Database connection and settings |
+| `schema.sql` | Database tables and constraints |
+| `seed.py` | Starting data (lockers, semesters, sample accounts) |
+| `templates/` | HTML pages (Jinja2 with Tailwind classes) |
+| `static/` | Custom CSS and JavaScript |
+| `docs/` | Proposal, code guide, and activity diagram |
 
-## Before submitting
+---
 
-- This code was checked with a stand-in database only (all pages render, and role checks and the fee formula work). It has **not** been run against a real MySQL server yet. Run the test checklist in `docs/LockerLog_Code_Guide_MySQL.md`.
-- Semester dates in `seed.py` are dummy. Put in the real academic calendar.
-- `base.html` loads Tailwind from the Play CDN (development only). For the final version, build a CSS file with the Tailwind CLI and link it instead.
-- Assumptions to confirm: ₱5.00 per day, prorated fee, no refund, one semester per assignment.
+## Notes and Assumptions
+
+- The semester dates in `seed.py` are placeholders. Replace them with the real academic calendar.
+- The rental fee is ₱5.00 per day, counted from the approval date until the end of the semester. Fees are non-refundable, and each assignment covers one semester.
+- Tailwind CSS is loaded through the Play CDN, which is intended for development. For production, build a static CSS file with the Tailwind CLI.
+- The sample accounts and the empty database password are for local development only. Do not use them in a deployed environment.
