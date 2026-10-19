@@ -25,6 +25,7 @@ LockerLog is a web application for renting and tracking school lockers. Students
 |---|---|---|
 | Python | 3.10 or newer | https://www.python.org *(tick "Add Python to PATH" when installing)* |
 | MySQL Server | 8.0.16 or newer | https://dev.mysql.com/downloads/installer/ |
+| Visual Studio Code | Any recent version | https://code.visualstudio.com |
 
 This guide assumes MySQL runs locally with the `root` user and **no password**. If your MySQL has a password, see [Using a MySQL password](#using-a-mysql-password).
 
@@ -32,13 +33,13 @@ This guide assumes MySQL runs locally with the `root` user and **no password**. 
 
 ## Installation
 
-Open **PowerShell** and run the following steps in order.
+Run all steps in the **VS Code terminal**, in order.
 
-**1. Go to the project folder**
+**1. Open the project in VS Code**
 
-```powershell
-cd path\to\LockerLog\lockerlog
-```
+Go to **File → Open Folder** and select the `lockerlog` folder. Then open the terminal with **Terminal → New Terminal** (shortcut: `` Ctrl + ` ``). The terminal opens inside the project folder, so no `cd` is needed.
+
+> The commands below are for **PowerShell**, the default terminal on Windows. If the terminal shows a different shell, click the dropdown next to the **+** in the terminal panel and choose **PowerShell**.
 
 **2. Install the dependencies**
 
@@ -66,7 +67,7 @@ The terminal should print `Seeded.`
 flask --app app run --debug
 ```
 
-Open **http://127.0.0.1:5000** in your browser. Keep the PowerShell window open while using the app, and press `Ctrl + C` to stop it.
+Open **http://127.0.0.1:5000** in your browser (or `Ctrl + Click` the link in the terminal). Keep the terminal running while you use the app, and press `Ctrl + C` in the terminal to stop it. To run other commands while the app is running, open a second terminal with the **+** button.
 
 ---
 
@@ -95,13 +96,13 @@ Open **http://127.0.0.1:5000** in your browser. Keep the PowerShell window open 
 If your MySQL `root` user has a password:
 
 1. In Step 3, add `-p` after `-u root` and enter the password when prompted.
-2. Before Step 4 (and before starting the app), set the password for the current PowerShell window:
+2. Before Step 4 (and before starting the app), set the password for the current terminal:
 
 ```powershell
 $env:DB_PASSWORD = 'your-password'
 ```
 
-Use single quotes. This setting is lost when the window is closed, so repeat it in every new window.
+Use single quotes. This setting is lost when the terminal is closed, so repeat it in every new terminal.
 
 ---
 
@@ -114,6 +115,8 @@ Use single quotes. This setting is lost when the window is closed, so repeat it 
 | `Unknown database 'lockerlog'` | Repeat Step 3. |
 | `ModuleNotFoundError` | Repeat Step 2. |
 | `flask` is not recognized | Run `python -m flask --app app run --debug` instead. |
+| Terminal is not in the project folder | Use **File → Open Folder** and select the `lockerlog` folder, then open a new terminal. |
+| `python` is not recognized | Reinstall Python and tick "Add Python to PATH", then restart VS Code. |
 | Page appears unstyled | Check your internet connection. Tailwind CSS is loaded from a CDN. |
 | Invalid login with the correct password | The seed did not run. Repeat Step 4. |
 
