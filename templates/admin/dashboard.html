@@ -1,32 +1,41 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import stat_card, button, empty_state, table_card_class, table_class, th_class, td_class, row_class %}
 {% block title %}Dashboard – LockerLog{% endblock %}
+{% block page_title %}Administrator dashboard{% endblock %}
+{% block page_subtitle %}Locker usage, pending requests and recent activity.{% endblock %}
+{% block page_actions %}{{ button("Review requests", href="/admin/requests", icon_name="inbox") }}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">Administrator dashboard</h1>
-<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-  {% for u in usage %}
-  <div class="bg-white rounded shadow p-4 text-center">
-    <div class="text-2xl font-bold">{{ u.n }}</div><div class="text-xs text-slate-500">{{ u.status }}</div>
-  </div>
-  {% endfor %}
+{#- Every locker status is shown, even when its count is 0 -#}
+{% set counts = {} %}{% for u in usage %}{% set _ = counts.update({u.status: u.n}) %}{% endfor %}
+<h2 class="mb-3 font-semibold text-ink">Usage summary</h2>
+<div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+  {{ stat_card("Pending requests", pending|length, "Flagged after 3 days", highlight=True) }}
+  {% for s in ["Available", "Reserved", "Assigned", "Expired", "Under Maintenance"] %}{{ stat_card(s, counts.get(s, 0)) }}{% endfor %}
 </div>
-<h2 class="font-semibold mb-2">Pending requests ({{ pending|length }})</h2>
-<div class="bg-white rounded shadow mb-6 overflow-x-auto">
-<table class="data w-full text-sm">
-  <tr><th>Request</th><th>User</th><th>Locker</th><th>Waiting</th></tr>
-  {% for r in pending %}
-  <tr class="border-t {{ 'bg-red-50' if r.days_waiting > 3 }}">
-    <td>{{ r.request_id }}</td><td>{{ r.school_id }}</td><td>{{ r.locker_id }}</td>
-    <td>{{ r.days_waiting }} day(s){{ ' – FLAGGED' if r.days_waiting > 3 }}</td>
-  </tr>
-  {% else %}<tr><td colspan="4" class="text-slate-500">No pending requests.</td></tr>
-  {% endfor %}
-</table></div>
-<h2 class="font-semibold mb-2">Recent activity</h2>
-<div class="bg-white rounded shadow overflow-x-auto">
-<table class="data w-full text-sm">
-  <tr><th>Time</th><th>User</th><th>Action</th><th>Locker</th><th>Rule blocked</th></tr>
-  {% for l in log %}
-  <tr class="border-t"><td>{{ l.logged_at }}</td><td>{{ l.school_id or '-' }}</td><td>{{ l.action }}</td><td>{{ l.locker_id or '-' }}</td><td>{{ l.rule_blocked or '' }}</td></tr>
-  {% endfor %}
-</table></div>
+
+<h2 class="mb-3 font-semibold text-ink">Pending requests ({{ pending|length }})</h2>
+<div class="{{ table_card_class }} mb-8">
+  {% if pending %}
+  <div class="overflow-x-auto">
+  <table class="{{ table_class }}">
+    <thead><tr><th class="{{ th_class }}">Request</th><th class="{{ th_class }}">User</th><th class="{{ th_class }}">Locker</th><th class="{{ th_class }}">Waiting</th></tr></thead>
+    <tbody>
+    {% for r in pending %}
+    <tr class="{{ row_class }} {{ 'bg-brand-600/[0.04]' if r.days_waiting > 3 }}">
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ r.request_id }}</td>
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ r.school_id }}</td>
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ r.locker_id }}</td>
+      <td class="{{ td_class }}">{{ r.days_waiting }} day(s){% if r.days_waiting > 3 %} <span class="ml-1 rounded-full bg-brand-600/10 px-2 py-0.5 text-xs font-semibold text-brand-600">FLAGGED</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    {{ empty_state("All caught up", "No pending requests.", icon_name="check") }}
+  {% endif %}
+</div>
+
+<h2 class="mb-3 font-semibold text-ink">Recent activity</h2>
+{% include "admin/_log_table.html" %}
 {% endblock %}

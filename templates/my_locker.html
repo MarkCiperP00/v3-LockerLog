@@ -1,29 +1,61 @@
-{% extends "base.html" %}
-{% block title %}My Locker – LockerLog{% endblock %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import badge, button, icon, empty_state, card_class %}
+{% block title %}Check My Locker – LockerLog{% endblock %}
+{% block page_title %}Check My Locker{% endblock %}
+{% block page_subtitle %}{{ user.name }} · <span class="font-mono">{{ user.school_id }}</span>{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">My Locker</h1>
 {% if asg %}
-<div class="bg-white rounded shadow p-5 max-w-md space-y-1 text-sm">
-  <div><span class="text-slate-500">Locker:</span> <b>{{ asg.locker_id }}</b></div>
-  <div><span class="text-slate-500">Semester:</span> {{ asg.school_year }} – Semester {{ asg.term }}</div>
-  <div><span class="text-slate-500">Start date:</span> {{ asg.date_start }}</div>
-  <div><span class="text-slate-500">Expiry date:</span> {{ asg.date_end }}</div>
-  <div><span class="text-slate-500">Rate:</span> ₱{{ asg.rate_per_day }} per day</div>
-  <div><span class="text-slate-500">Total fee:</span> <b>₱{{ asg.total_fee }}</b></div>
-  <div><span class="text-slate-500">Status:</span> {{ asg.status }}</div>
-  <p class="pt-2 text-xs text-slate-500">Please pay the total fee at the cashier or office.</p>
-  {% if asg.status == "Expired" %}
-    <p class="text-xs text-red-700">This assignment has expired. Ask the administrator to release it before renting another locker.</p>
-  {% endif %}
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+  <div class="rounded-2xl bg-gradient-to-b from-maroon-700 via-maroon-800 to-maroon-900 p-6 text-white shadow-sm sm:p-8">
+    <div class="flex items-start justify-between gap-3">
+      <p class="text-sm text-white/80">Your locker</p>
+      <span class="rounded-full bg-white px-0.5 py-0.5">{{ badge(asg.status) }}</span>
+    </div>
+    <p class="mt-2 font-mono text-4xl font-medium tracking-tight sm:text-5xl">{{ asg.locker_id }}</p>
+    <p class="mt-3 flex items-center gap-2 font-medium">{{ icon("locker", "h-4 w-4 shrink-0 text-gold-300") }}{{ asg.building }} building · Floor {{ asg.floor }}</p>
+    <p class="mt-1 text-sm text-white/80">{{ asg.school_year }} – Semester {{ asg.term }}</p>
+    <div class="mt-6 border-t border-white/15 pt-5">
+      <p class="text-sm text-white/80">Total fee</p>
+      <p class="mt-1 text-3xl font-bold text-gold-300">₱{{ asg.total_fee }}</p>
+    </div>
+  </div>
+
+  <div class="{{ card_class }}">
+    <h2 class="font-semibold text-ink">Assignment details</h2>
+    <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+      <div><dt class="text-mute">Location</dt><dd class="mt-0.5 font-medium text-ink">{{ asg.building }} · Floor {{ asg.floor }}</dd></div>
+      <div><dt class="text-mute">Semester</dt><dd class="mt-0.5 font-medium text-ink">{{ asg.school_year }} – Semester {{ asg.term }}</dd></div>
+      <div><dt class="text-mute">Start date</dt><dd class="mt-0.5 font-medium text-ink">{{ asg.date_start }}</dd></div>
+      <div><dt class="text-mute">Expiry date</dt><dd class="mt-0.5 font-medium text-ink">{{ asg.date_end }}</dd></div>
+      <div><dt class="text-mute">Rate</dt><dd class="mt-0.5 font-medium text-ink">₱{{ asg.rate_per_day }} per day</dd></div>
+      <div><dt class="text-mute">Total fee</dt><dd class="mt-0.5 font-medium text-ink">₱{{ asg.total_fee }}</dd></div>
+      <div><dt class="text-mute">Status</dt><dd class="mt-1">{{ badge(asg.status) }}</dd></div>
+    </dl>
+    <p class="mt-6 flex gap-2 text-xs text-mute">{{ icon("info", "h-4 w-4 shrink-0") }}Please pay the total fee at the cashier or office.</p>
+    {% if asg.status == "Expired" %}
+      <p class="mt-3 flex gap-2 rounded-[10px] bg-brand-600/10 px-3 py-2.5 text-sm font-medium text-brand-600">{{ icon("alert", "mt-0.5 h-4 w-4 shrink-0") }}This assignment has expired. Ask the administrator to release it before renting another locker.</p>
+    {% endif %}
+  </div>
 </div>
 {% elif pending %}
-<div class="bg-white rounded shadow p-5 max-w-md text-sm space-y-2">
-  <p>Pending request for locker <b>{{ pending.locker_id }}</b> (submitted {{ pending.date_submitted }}).</p>
-  <form method="post" action="/cancel/{{ pending.request_id }}" data-confirm="Cancel this request?">
-    <button class="bg-red-700 text-white px-3 py-1 rounded">Cancel request</button>
+<div class="{{ card_class }} max-w-2xl">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="text-sm text-mute">Pending request</p>
+      <p class="mt-1 font-mono text-2xl font-medium text-ink">{{ pending.locker_id }}</p>
+      <p class="mt-1 text-sm font-medium text-ink">{{ pending.building }} building · Floor {{ pending.floor }}</p>
+      <p class="mt-1 text-sm text-mute">{{ pending.school_year }} – Semester {{ pending.term }} · Submitted {{ pending.date_submitted }}</p>
+      <p class="mt-3 text-sm text-mute">Waiting for the administrator's decision. The fee is computed when the request is approved.</p>
+    </div>
+    {{ badge(pending.status) }}
+  </div>
+  <form method="post" action="/cancel/{{ pending.request_id }}" data-confirm="Cancel this request?" class="mt-6 border-t border-line pt-5">
+    {{ button("Cancel request", variant="danger") }}
   </form>
 </div>
 {% else %}
-<p class="text-slate-600">You have no locker or pending request. <a class="text-blue-700 underline" href="/lockers">Browse lockers</a>.</p>
+<div class="{{ card_class }}">
+  {{ empty_state("No locker yet", "You have no locker or pending request.", "Browse lockers", "/lockers", "key") }}
+</div>
 {% endif %}
 {% endblock %}

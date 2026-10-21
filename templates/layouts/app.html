@@ -1,0 +1,102 @@
+{#- App shell for every signed-in page. Pages fill: title, page_title, page_subtitle, page_actions, content. -#}
+{% extends "base.html" %}
+{% from "components/ui.html" import logo, icon, page_header, flash_messages, confirm_modal %}
+
+{% block body_class %}bg-offwhite{% endblock %}
+{% block body %}
+{#- Same role checks as before; each item: (endpoint, href, label, icon, extra endpoints that keep it active) -#}
+{% if me and me.can("request_locker") %}
+  {% set nav = [("lockers", "/lockers", "Lockers", "locker", ["request_locker"]),
+                ("my_locker", "/my-locker", "Check My Locker", "key", [])] %}
+{% elif me and me.can("manage_lockers") %}
+  {% set nav = [("admin_dashboard", "/admin", "Dashboard", "dashboard", []),
+                ("admin_requests", "/admin/requests", "Requests", "inbox", []),
+                ("admin_lockers", "/admin/lockers", "Lockers", "locker", []),
+                ("admin_settings", "/admin/settings", "Settings", "settings", []),
+                ("admin_log", "/admin/log", "Log", "list", [])] %}
+{% elif me and me.can("set_maintenance_status") %}
+  {% set nav = [("maintenance", "/maintenance", "Maintenance", "wrench", [])] %}
+{% else %}
+  {% set nav = [] %}
+{% endif %}
+{% block page_backdrop %}{% endblock %}
+<div class="relative min-h-screen lg:pl-[260px]">
+
+  {#- Compact top bar below lg -#}
+  <div class="sticky top-0 z-30 flex h-16 items-center justify-between bg-maroon-800 px-4 lg:hidden">
+    <a href="/" class="rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">{{ logo("sm") }}</a>
+    <button type="button" id="nav-open" aria-controls="app-sidebar" aria-expanded="false" aria-label="Open menu"
+            class="grid h-11 w-11 place-items-center rounded-[10px] text-white hover:bg-white/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/30">
+      {{ icon("menu", "h-6 w-6") }}
+    </button>
+  </div>
+
+  <div id="nav-overlay" class="fixed inset-0 z-40 hidden bg-maroon-900/60 backdrop-blur-sm lg:hidden" aria-hidden="true"></div>
+
+  <aside id="app-sidebar" aria-label="Main navigation"
+         class="fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[85vw] flex-col overflow-hidden bg-gradient-to-b from-maroon-700 via-maroon-800 to-maroon-900 text-white transition-[transform,visibility] duration-300 ease-out motion-reduce:transition-none max-lg:invisible max-lg:-translate-x-full max-lg:data-[open=true]:visible max-lg:data-[open=true]:translate-x-0">
+    <div class="sidebar-pattern" aria-hidden="true"></div>
+    <div class="relative flex items-center justify-between px-6 pb-6 pt-7">
+      <a href="/" class="rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">{{ logo() }}</a>
+      <button type="button" id="nav-close" aria-label="Close menu"
+              class="grid h-10 w-10 place-items-center rounded-[10px] text-white/80 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-white/30 lg:hidden">
+        {{ icon("x") }}
+      </button>
+    </div>
+
+    <nav class="relative flex-1 overflow-y-auto px-3">
+      <ul class="space-y-1">
+        {% for endpoint, href, label, icon_name, also in nav %}
+        {% set active = request.endpoint == endpoint or request.endpoint in also %}
+        <li>
+          <a href="{{ href }}" {% if active %}aria-current="page"{% endif %}
+             class="relative flex h-11 items-center gap-3 rounded-[10px] px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-white/30 motion-reduce:transition-none {{ 'bg-white/10 text-white' if active else 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+            {% if active %}<span class="absolute inset-y-2 left-0 w-[3px] rounded-full bg-gold-500" aria-hidden="true"></span>{% endif %}
+            {{ icon(icon_name) }}{{ label }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+
+    {% if me %}
+    <div class="relative border-t border-white/10 p-4">
+      <div class="flex items-center gap-3 rounded-[10px] bg-white/5 px-3 py-3">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-sm font-bold">{{ me.name[:1] | upper }}</span>
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold">{{ me.name }}</p>
+          <p class="truncate text-xs text-white/70"><span class="font-mono">{{ me.school_id }}</span> · {{ me.ROLE }}</p>
+        </div>
+      </div>
+      <a href="/logout" class="mt-2 flex h-11 items-center gap-3 rounded-[10px] px-4 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-white/30">
+        {{ icon("logout") }}Log out
+      </a>
+    </div>
+    {% endif %}
+  </aside>
+
+  <div class="min-w-0">
+    <header class="border-b border-line bg-white">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-6 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+        {{ page_header(self.page_title() | trim, self.page_subtitle() | trim or None) }}
+        {% set actions = self.page_actions() | trim %}
+        {% if actions %}<div class="flex flex-wrap items-center gap-3">{{ actions }}</div>{% endif %}
+      </div>
+    </header>
+
+    <main id="main" class="page-enter mx-auto max-w-7xl p-5 sm:p-8">
+      {{ flash_messages() }}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{{ confirm_modal() }}
+{% endblock %}
+
+{#- Header blocks filled by pages; declared here so self.*() can read them in the top bar. -#}
+{% if false %}{% block page_title %}{% endblock %}{% block page_subtitle %}{% endblock %}{% block page_actions %}{% endblock %}{% endif %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app-shell.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+{% endblock %}

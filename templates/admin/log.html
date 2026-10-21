@@ -1,10 +1,7 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
 {% block title %}Activity Log – LockerLog{% endblock %}
+{% block page_title %}Activity log{% endblock %}
+{% block page_subtitle %}Latest 200 actions, including blocked attempts (highlighted).{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">Activity log (latest 200)</h1>
-<div class="bg-white rounded shadow overflow-x-auto">
-<table class="data w-full text-sm">
-  <tr><th>Time</th><th>User</th><th>Action</th><th>Locker</th><th>Rule blocked</th></tr>
-  {% for l in log %}<tr class="border-t {{ 'bg-red-50' if l.rule_blocked }}"><td>{{ l.logged_at }}</td><td>{{ l.school_id or '-' }}</td><td>{{ l.action }}</td><td>{{ l.locker_id or '-' }}</td><td>{{ l.rule_blocked or '' }}</td></tr>{% endfor %}
-</table></div>
+{% include "admin/_log_table.html" %}
 {% endblock %}

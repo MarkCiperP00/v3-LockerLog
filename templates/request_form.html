@@ -1,19 +1,40 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, icon, input_class, label_class, help_class, card_class %}
 {% block title %}Request locker – LockerLog{% endblock %}
+{% block page_title %}Request a locker{% endblock %}
+{% block page_subtitle %}Choose the semester you need locker <span class="font-mono">{{ locker_id }}</span> for.{% endblock %}
 {% block content %}
-<form method="post" class="max-w-md bg-white p-6 rounded-lg shadow space-y-4">
-  <h1 class="text-xl font-bold">Request locker {{ locker_id }}</h1>
-  <label class="block text-sm">Semester
-    <select id="sem" name="semester_id" required data-rate="{{ rate }}"
-            class="mt-1 w-full border rounded px-3 py-2">
+<form method="post" class="{{ card_class }} mx-auto max-w-2xl space-y-6">
+  <div>
+    <label for="sem" class="{{ label_class }}">Semester</label>
+    <select id="sem" name="semester_id" required data-rate="{{ rate }}" class="{{ input_class }}">
       <option value="">Choose semester</option>
       {% for s in semesters %}
         <option value="{{ s.semester_id }}">{{ s.school_year }} – Semester {{ s.term }} ({{ s.date_start }} to {{ s.date_end }})</option>
       {% endfor %}
     </select>
-  </label>
-  <div id="preview" class="text-sm text-slate-600">Rate: ₱{{ rate }} per day</div>
-  <button class="w-full bg-blue-900 text-white py-2 rounded hover:bg-blue-800">Submit request</button>
-  <p class="text-xs text-slate-500">The fee is prorated from the approval date. Payment is made at the cashier. The system does not detect payment.</p>
+  </div>
+
+  <dl class="divide-y divide-line rounded-[10px] border border-line bg-offwhite text-sm">
+    <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+      <dt class="text-mute">Locker</dt>
+      <dd class="font-mono font-medium text-ink">{{ locker_id }}</dd>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+      <dt class="text-mute">Rate</dt>
+      <dd class="font-medium text-ink">₱{{ rate }} per day</dd>
+    </div>
+    <div class="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
+      <dt class="text-mute">Fee</dt>
+      <dd id="preview" class="text-right font-medium text-ink" aria-live="polite">Rate: ₱{{ rate }} per day</dd>
+    </div>
+  </dl>
+
+  <p class="{{ help_class }} flex gap-2">{{ icon("info", "mt-px h-4 w-4 shrink-0") }}The fee is prorated from the approval date. Payment is made at the cashier. The system does not detect payment.</p>
+
+  <div class="flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:justify-end">
+    {{ button("Back to lockers", href="/lockers", variant="secondary") }}
+    {{ button("Submit request") }}
+  </div>
 </form>
 {% endblock %}

@@ -1,5 +1,132 @@
-/* Small custom CSS on top of Tailwind */
-.flash { transition: opacity .4s ease; }
+/* Small custom CSS on top of Tailwind (app shell only). */
+
+/* Subtle page entrance */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-enter { animation: page-enter 250ms ease-out both; }
+
+/* Faint, static "LockerLog" pattern behind the sidebar nav */
+.sidebar-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='236' height='92'%3E%3Cg font-family='DM Mono,ui-monospace,monospace' font-size='15' font-weight='500' fill='%23ffd6dc' text-anchor='middle'%3E%3Ctext x='59' y='28'%3ELockerLog%3C/text%3E%3Ctext x='177' y='28'%3ELockerLog%3C/text%3E%3Ctext x='0' y='74'%3ELockerLog%3C/text%3E%3Ctext x='118' y='74'%3ELockerLog%3C/text%3E%3Ctext x='236' y='74'%3ELockerLog%3C/text%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Flash dismiss */
+.flash { transition: opacity 200ms ease; }
 .flash.hide { opacity: 0; }
-table.data th { text-align: left; font-weight: 600; background: #f1f5f9; }
-table.data th, table.data td { padding: .5rem .75rem; }
+
+/* ---------- Liquid glass (student Lockers page) ---------- */
+
+/* Fixed backdrop behind the content: soft brand glows + a faint word pattern for the glass to bend */
+.glass-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 45% at 18% 22%, rgba(166, 42, 57, 0.30), transparent 70%),
+    radial-gradient(32% 40% at 88% 28%, rgba(227, 199, 102, 0.32), transparent 70%),
+    radial-gradient(45% 50% at 62% 92%, rgba(74, 24, 32, 0.28), transparent 70%),
+    radial-gradient(30% 35% at 42% 58%, rgba(139, 30, 43, 0.14), transparent 70%),
+    #faf9f7;
+}
+.glass-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='236' height='92'%3E%3Cg font-family='DM Mono,ui-monospace,monospace' font-size='15' font-weight='500' fill='%233d1118' text-anchor='middle'%3E%3Ctext x='59' y='28'%3ELockerLog%3C/text%3E%3Ctext x='177' y='28'%3ELockerLog%3C/text%3E%3Ctext x='0' y='74'%3ELockerLog%3C/text%3E%3Ctext x='118' y='74'%3ELockerLog%3C/text%3E%3Ctext x='236' y='74'%3ELockerLog%3C/text%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Glass frame: ::before = distorted, blurred backdrop; ::after = specular edges + pointer light */
+.liquid-glass {
+  --mx: 50%;
+  --my: 0%;
+  --light: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;              /* clips the distorted layer's ragged edges */
+  border-radius: 16px;
+  box-shadow:
+    0 10px 30px -12px rgba(46, 11, 16, 0.28),
+    0 2px 6px -2px rgba(46, 11, 16, 0.10);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease;
+}
+.liquid-glass::before,
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.liquid-glass::before {
+  inset: -24px;                  /* bleed past the frame so displacement never shows an edge */
+  background: rgba(255, 255, 255, 0.46);
+  -webkit-backdrop-filter: blur(2.5px) saturate(180%) brightness(1.04);
+          backdrop-filter: blur(2.5px) saturate(180%) brightness(1.04);
+  filter: url(#liquid-glass-distortion);
+}
+.liquid-glass::after {
+  background:
+    radial-gradient(180px circle at var(--mx) var(--my), rgba(255, 255, 255, calc(0.55 * var(--light))), transparent 70%),
+    linear-gradient(140deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 38%);
+  box-shadow:
+    inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
+    inset -1px -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset 0 -12px 24px -18px rgba(139, 30, 43, 0.25);
+  transition: background 200ms ease;
+}
+.liquid-glass.is-interactive:hover,
+.liquid-glass.is-interactive:focus-within {
+  --light: 1;
+  transform: translateY(-4px);
+  box-shadow:
+    0 22px 40px -16px rgba(46, 11, 16, 0.38),
+    0 4px 10px -4px rgba(46, 11, 16, 0.14);
+}
+
+/* ---------- Shimmering primary button (Request) ---------- */
+@keyframes btn-shimmer {
+  0%       { transform: translateX(-130%) skewX(-18deg); }
+  45%, 100% { transform: translateX(230%) skewX(-18deg); }
+}
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -2px auto -2px 0;
+  width: 45%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.10) 20%, rgba(255, 240, 205, 0.55) 50%, rgba(255, 255, 255, 0.10) 80%, transparent);
+  animation: btn-shimmer 3.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+/* A gentle wave across the grid instead of every button flashing at once */
+.locker-tile:nth-child(4n+2) .btn-shimmer::after { animation-delay: 160ms; }
+.locker-tile:nth-child(4n+3) .btn-shimmer::after { animation-delay: 320ms; }
+.locker-tile:nth-child(4n+4) .btn-shimmer::after { animation-delay: 480ms; }
+.locker-tile .btn-shimmer:hover {
+  box-shadow: 0 12px 26px -8px rgba(139, 30, 43, 0.55), 0 0 0 1px rgba(227, 199, 102, 0.45);
+  filter: brightness(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+  .flash { transition: none; }
+  .liquid-glass { transition: none; }
+  .liquid-glass.is-interactive:hover,
+  .liquid-glass.is-interactive:focus-within { transform: none; }
+  .btn-shimmer::after { animation: none; display: none; }
+}

@@ -1,0 +1,24 @@
+{#- Activity log table, shared by the dashboard and the log page. Expects `log`. -#}
+{% from "components/ui.html" import empty_state, table_card_class, table_class, th_class, td_class, row_class %}
+<div class="{{ table_card_class }}">
+  {% if log %}
+  <div class="overflow-x-auto">
+  <table class="{{ table_class }}">
+    <thead><tr><th class="{{ th_class }}">Time</th><th class="{{ th_class }}">User</th><th class="{{ th_class }}">Action</th><th class="{{ th_class }}">Locker</th><th class="{{ th_class }}">Rule blocked</th></tr></thead>
+    <tbody>
+    {% for l in log %}
+    <tr class="{{ row_class }} {{ 'bg-brand-600/[0.04]' if l.rule_blocked }}">
+      <td class="{{ td_class }} whitespace-nowrap text-mute">{{ l.logged_at }}</td>
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ l.school_id or '-' }}</td>
+      <td class="{{ td_class }} font-mono text-xs">{{ l.action }}</td>
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ l.locker_id or '-' }}</td>
+      <td class="{{ td_class }} {{ 'font-medium text-brand-600' if l.rule_blocked }}">{{ l.rule_blocked or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    {{ empty_state("No activity yet", "Actions will appear here as people use LockerLog.", icon_name="list") }}
+  {% endif %}
+</div>

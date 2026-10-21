@@ -96,13 +96,13 @@ Open **http://127.0.0.1:5000** in your browser (or `Ctrl + Click` the link in th
 If your MySQL `root` user has a password:
 
 1. In Step 3, add `-p` after `-u root` and enter the password when prompted.
-2. Before Step 4 (and before starting the app), set the password for the current terminal:
+2. In Step 4 and Step 5, the terminal asks `MySQL password for root@localhost:` once. Type the password (nothing is shown while typing) and press Enter. If it is wrong, it asks again.
+
+The password is asked once each time you start the app. To skip the prompt for the rest of a terminal session, set it beforehand:
 
 ```powershell
 $env:DB_PASSWORD = 'your-password'
 ```
-
-Use single quotes. This setting is lost when the terminal is closed, so repeat it in every new terminal.
 
 ---
 
@@ -110,7 +110,7 @@ Use single quotes. This setting is lost when the terminal is closed, so repeat i
 
 | Problem | Solution |
 |---|---|
-| `Access denied for user 'root'` | MySQL has a password. See [Using a MySQL password](#using-a-mysql-password). |
+| `Access denied for user 'root'` | Wrong MySQL password. Restart the app and type it again at the prompt. See [Using a MySQL password](#using-a-mysql-password). |
 | `Can't connect to MySQL server` | MySQL is not running. Start it from `services.msc` (usually named `MySQL80`). |
 | `Unknown database 'lockerlog'` | Repeat Step 3. |
 | `ModuleNotFoundError` | Repeat Step 2. |

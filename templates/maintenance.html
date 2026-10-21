@@ -1,41 +1,43 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import badge, button, empty_state, table_card_class, table_class, th_class, td_class, row_class %}
 {% block title %}Maintenance – LockerLog{% endblock %}
+{% block page_title %}Maintenance list{% endblock %}
+{% block page_subtitle %}Mark lockers as Under Maintenance, then set them Available when repaired.{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">Maintenance list</h1>
-<form method="get" class="flex flex-wrap gap-3 mb-4">
-  <select name="building" class="border rounded px-2 py-1">
-    <option value="">All buildings</option>
-    {% for b in ["COECSA","Sotero","JPL"] %}<option {{ "selected" if request.args.building==b }}>{{ b }}</option>{% endfor %}
-  </select>
-  <input name="floor" type="number" placeholder="Floor" value="{{ request.args.floor or '' }}" class="border rounded px-2 py-1 w-24">
-  <select name="status" class="border rounded px-2 py-1">
-    <option value="">Any status</option>
-    {% for s in ["Available","Reserved","Assigned","Expired","Under Maintenance"] %}
-      <option {{ "selected" if request.args.status==s }}>{{ s }}</option>{% endfor %}
-  </select>
-  <button class="bg-blue-900 text-white px-4 rounded">Filter</button>
-</form>
-<div class="bg-white rounded shadow overflow-x-auto">
-<table class="data w-full text-sm">
-  <tr><th>Locker</th><th>Building</th><th>Floor</th><th>Status</th><th>Action</th></tr>
-  {% for l in lockers %}
-  <tr class="border-t {{ 'bg-red-50' if l.status == 'Expired' }}">
-    <td>{{ l.locker_id }}</td><td>{{ l.building }}</td><td>{{ l.floor }}</td><td>{{ l.status }}</td>
-    <td>
-      {% if l.status == "Available" %}
-        <form method="post"><input type="hidden" name="locker_id" value="{{ l.locker_id }}">
-          <input type="hidden" name="status" value="Under Maintenance">
-          <button class="bg-slate-700 text-white px-3 py-1 rounded">Set Under Maintenance</button></form>
-      {% elif l.status == "Under Maintenance" %}
-        <form method="post"><input type="hidden" name="locker_id" value="{{ l.locker_id }}">
-          <input type="hidden" name="status" value="Available">
-          <button class="bg-green-700 text-white px-3 py-1 rounded">Repair finished: set Available</button></form>
-      {% elif l.status == "Expired" %}
-        <span class="text-xs text-red-700">Clear the locker, then tell the administrator to release it.</span>
-      {% else %}<span class="text-xs text-slate-400">No change allowed</span>{% endif %}
-    </td>
-  </tr>
-  {% endfor %}
-</table>
+{% include "partials/locker_filters.html" %}
+
+<div class="{{ table_card_class }}">
+  {% if lockers %}
+  <div class="overflow-x-auto">
+  <table class="{{ table_class }}">
+    <thead><tr><th class="{{ th_class }}">Locker</th><th class="{{ th_class }}">Building</th><th class="{{ th_class }}">Floor</th><th class="{{ th_class }}">Status</th><th class="{{ th_class }} text-right">Action</th></tr></thead>
+    <tbody>
+    {% for l in lockers %}
+    <tr class="{{ row_class }} {{ 'bg-brand-600/[0.04]' if l.status == 'Expired' }}">
+      <td class="{{ td_class }} whitespace-nowrap font-mono font-medium">{{ l.locker_id }}</td>
+      <td class="{{ td_class }}">{{ l.building }}</td>
+      <td class="{{ td_class }}">{{ l.floor }}</td>
+      <td class="{{ td_class }}">{{ badge(l.status) }}</td>
+      <td class="{{ td_class }} text-right">
+        {% if l.status == "Available" %}
+          <form method="post" class="inline-flex"><input type="hidden" name="locker_id" value="{{ l.locker_id }}">
+            <input type="hidden" name="status" value="Under Maintenance">
+            {{ button("Set Under Maintenance", variant="secondary", size="sm") }}</form>
+        {% elif l.status == "Under Maintenance" %}
+          <form method="post" class="inline-flex"><input type="hidden" name="locker_id" value="{{ l.locker_id }}">
+            <input type="hidden" name="status" value="Available">
+            {{ button("Repair finished: set Available", size="sm") }}</form>
+        {% elif l.status == "Expired" %}
+          <span class="text-xs font-medium text-brand-600">Clear the locker, then tell the administrator to release it.</span>
+        {% else %}<span class="text-xs text-mute">No change allowed</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    {{ empty_state("No lockers found", "No lockers match the filter.", "Clear filters", "/maintenance", "filter") }}
+  {% endif %}
 </div>
 {% endblock %}

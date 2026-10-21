@@ -1,0 +1,205 @@
+{#- Shared LockerLog UI pieces. Import with {% from "components/ui.html" import ... %}. -#}
+
+{#- ---------- Class strings shared by forms, cards and tables ---------- -#}
+{% set input_class = "block h-[50px] w-full rounded-[10px] border border-line bg-white px-4 text-ink placeholder:text-mute/80 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/15 motion-reduce:transition-none" %}
+{% set label_class = "mb-1.5 block text-sm font-medium text-ink/80" %}
+{% set help_class = "mt-1.5 text-xs text-mute" %}
+{% set card_class = "rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6" %}
+{% set table_card_class = "overflow-hidden rounded-2xl border border-line bg-white shadow-sm" %}
+{% set table_class = "w-full min-w-[640px] text-left text-sm" %}
+{% set th_class = "bg-gray-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mute" %}
+{% set td_class = "px-4 py-3 align-middle" %}
+{% set row_class = "border-t border-line transition-colors hover:bg-brand-600/[0.03]" %}
+
+{#- ---------- Icons (inline SVG, stroke 2, rounded caps) ---------- -#}
+{% set _icons = {
+  "locker":   '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M15 15v1"/>',
+  "grid":     '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  "key":      '<circle cx="8" cy="15" r="4"/><path d="m10.85 12.15 8.65-8.65M18 5l2 2M15 8l2 2"/>',
+  "dashboard":'<path d="M3 12h7V3H3zM14 21h7v-9h-7zM14 3v5h7V3zM3 21h7v-5H3z"/>',
+  "inbox":    '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  "settings": '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  "list":     '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  "wrench":   '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  "logout":   '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  "menu":     '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  "x":        '<path d="M18 6 6 18M6 6l12 12"/>',
+  "alert":    '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+  "check":    '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  "info":     '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  "plus":     '<path d="M12 5v14M5 12h14"/>',
+  "filter":   '<path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>',
+  "chevron-left":  '<path d="m15 18-6-6 6-6"/>',
+  "chevron-right": '<path d="m9 18 6-6-6-6"/>',
+  "calendar": '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  "clock":    '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+} %}
+
+{% macro icon(name, cls="h-5 w-5") -%}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ _icons.get(name, "") | safe }}</svg>
+{%- endmacro %}
+
+{#- ---------- Logo block (login stage + sidebar) ---------- -#}
+{% macro logo(size="lg") -%}
+<span class="inline-flex items-center gap-3">
+  <span class="grid {{ 'h-12 w-12' if size == 'lg' else 'h-10 w-10' }} shrink-0 place-items-center rounded-xl bg-white text-brand-600 shadow-sm">
+    {{ icon("locker", "h-6 w-6" if size == "lg" else "h-5 w-5") }}
+  </span>
+  <span class="{{ 'text-2xl' if size == 'lg' else 'text-xl' }} font-bold text-white">LockerLog</span>
+</span>
+{%- endmacro %}
+
+{#- ---------- Page header: gold bar + title + subtitle ---------- -#}
+{% macro page_header(title, subtitle=None) -%}
+<div class="min-w-0">
+  <div class="h-1 w-10 rounded-full bg-gold-500" aria-hidden="true"></div>
+  <h1 class="mt-3 text-2xl font-bold text-ink sm:text-3xl">{{ title }}</h1>
+  {% if subtitle %}<p class="mt-1 text-sm text-mute">{{ subtitle }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{#- ---------- Buttons ---------- -#}
+{% set _btn_base = "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-semibold transition focus:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none" %}
+{% set _btn_sizes = {"sm": "h-10 px-3.5 text-sm", "field": "h-[50px] px-5 text-sm", "md": "h-11 px-5 text-sm", "lg": "h-[54px] px-6 text-base"} %}
+{% set _btn_variants = {
+  "primary":   "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-md shadow-brand-600/30 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm focus-visible:ring-brand-600/30 motion-reduce:hover:translate-y-0",
+  "secondary": "border border-line bg-white text-ink hover:bg-gray-50 focus-visible:ring-brand-600/15",
+  "ghost":     "text-ink hover:bg-brand-600/5 focus-visible:ring-brand-600/15",
+  "danger":    "border border-brand-600 bg-white text-brand-600 hover:bg-brand-600 hover:text-white focus-visible:ring-brand-600/25",
+} %}
+
+{% macro button_class(variant="primary", size="md", full=False, cls="") -%}
+{{ _btn_base }} {{ _btn_sizes[size] }} {{ _btn_variants[variant] }}{{ ' w-full' if full }}{{ ' ' ~ cls if cls }}
+{%- endmacro %}
+
+{#- href given -> <a>; otherwise <button type=...>. `attrs` is a dict of extra HTML attributes. -#}
+{% macro button(label, href=None, type="submit", variant="primary", size="md", icon_name=None, full=False, attrs={}, cls="") -%}
+{% if href -%}
+<a href="{{ href }}" class="{{ button_class(variant, size, full, cls) }}" {{ attrs | xmlattr }}>{% if icon_name %}{{ icon(icon_name, "h-4 w-4") }}{% endif %}{{ label }}</a>
+{%- else -%}
+<button type="{{ type }}" class="{{ button_class(variant, size, full, cls) }}" {{ attrs | xmlattr }}>{% if icon_name %}{{ icon(icon_name, "h-4 w-4") }}{% endif %}{{ label }}</button>
+{%- endif %}
+{%- endmacro %}
+
+{#- ---------- Status badges (the project's own status names) ---------- -#}
+{% set _badge_styles = {
+  "positive": ("bg-emerald-50 text-emerald-800 ring-emerald-700/20", "bg-emerald-600"),
+  "pending":  ("bg-gold-300/25 text-ink ring-gold-500/40", "bg-gold-500"),
+  "active":   ("bg-brand-600/10 text-brand-600 ring-brand-600/20", "bg-brand-600"),
+  "inactive": ("bg-gray-100 text-gray-700 ring-gray-500/20", "bg-gray-400"),
+  "blocked":  ("bg-slate-700 text-white ring-slate-800", "bg-slate-300"),
+} %}
+{% set _badge_map = {
+  "Available": "positive", "Approved": "positive",
+  "Reserved": "pending", "Pending": "pending",
+  "Assigned": "active", "Active": "active",
+  "Expired": "inactive", "Cancelled": "inactive", "Released": "inactive", "Rejected": "inactive",
+  "Under Maintenance": "blocked",
+} %}
+
+{% macro badge(status) -%}
+{% set style = _badge_styles[_badge_map.get(status, "inactive")] -%}
+<span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset {{ style[0] }}">
+  <span class="h-1.5 w-1.5 rounded-full {{ style[1] }}" aria-hidden="true"></span>{{ status }}
+</span>
+{%- endmacro %}
+
+{#- ---------- Stat card ---------- -#}
+{% macro stat_card(label, value, hint=None, highlight=False) -%}
+{% if highlight -%}
+<div class="rounded-2xl bg-gradient-to-b from-maroon-700 via-maroon-800 to-maroon-900 p-5 text-white shadow-sm">
+  <p class="text-sm text-white/80">{{ label }}</p>
+  <p class="mt-1 text-3xl font-bold text-gold-300">{{ value }}</p>
+  {% if hint %}<p class="mt-1 text-xs text-white/70">{{ hint }}</p>{% endif %}
+</div>
+{%- else -%}
+<div class="rounded-2xl border border-line bg-white p-5 shadow-sm">
+  <p class="text-sm text-mute">{{ label }}</p>
+  <p class="mt-1 text-3xl font-bold text-ink">{{ value }}</p>
+  {% if hint %}<p class="mt-1 text-xs text-mute">{{ hint }}</p>{% endif %}
+</div>
+{%- endif %}
+{%- endmacro %}
+
+{#- ---------- Flash messages (dismissible; uncategorised messages show as info) ---------- -#}
+{% set _flash_styles = {
+  "success": ("bg-emerald-50 text-emerald-900", "bg-emerald-600", "check", "status"),
+  "error":   ("bg-brand-600/10 text-brand-600", "bg-brand-600", "alert", "alert"),
+  "info":    ("bg-gold-300/20 text-ink", "bg-gold-500", "info", "status"),
+} %}
+{% set _flash_alias = {"danger": "error", "warning": "info", "message": "info"} %}
+
+{% macro flash_messages() -%}
+{% with msgs = get_flashed_messages(with_categories=true) %}
+{% if msgs %}
+<div class="mb-6 space-y-3">
+  {% for category, m in msgs %}
+  {% set s = _flash_styles[_flash_alias.get(category, category) if _flash_alias.get(category, category) in _flash_styles else "info"] %}
+  <div class="flash relative flex items-start gap-3 overflow-hidden rounded-[10px] py-3 pl-5 pr-2 text-sm font-medium {{ s[0] }}" role="{{ s[3] }}">
+    <span class="absolute inset-y-0 left-0 w-[3px] {{ s[1] }}" aria-hidden="true"></span>
+    {{ icon(s[2], "mt-0.5 h-4 w-4 shrink-0") }}
+    <p class="flex-1 pt-px">{{ m }}</p>
+    <button type="button" data-flash-dismiss aria-label="Dismiss message"
+            class="-my-1 grid h-10 w-10 shrink-0 place-items-center rounded-lg opacity-70 hover:bg-black/5 hover:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/15">
+      {{ icon("x", "h-4 w-4") }}
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{%- endmacro %}
+
+{#- ---------- Empty state ---------- -#}
+{% macro empty_state(title, text, action_label=None, action_href=None, icon_name="inbox") -%}
+<div class="flex flex-col items-center px-6 py-12 text-center">
+  <span class="grid h-12 w-12 place-items-center rounded-2xl bg-brand-600/5 text-brand-600">{{ icon(icon_name, "h-6 w-6") }}</span>
+  <p class="mt-4 font-semibold text-ink">{{ title }}</p>
+  <p class="mt-1 max-w-sm text-sm text-mute">{{ text }}</p>
+  {% if action_label and action_href %}<div class="mt-5">{{ button(action_label, href=action_href) }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{#- ---------- Pagination (base_url must not already contain "?") ---------- -#}
+{% macro pagination(page, pages, base_url) -%}
+{% if pages > 1 %}
+<nav class="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Pagination">
+  {% if page > 1 %}<a href="{{ base_url }}?page={{ page - 1 }}" class="{{ button_class('secondary', 'sm') }}" aria-label="Previous page">{{ icon("chevron-left", "h-4 w-4") }}</a>{% endif %}
+  {% for p in range(1, pages + 1) %}
+    {% if p == page %}
+      <span aria-current="page" class="{{ _btn_base }} {{ _btn_sizes['sm'] }} min-w-10 bg-brand-600 text-white">{{ p }}</span>
+    {% else %}
+      <a href="{{ base_url }}?page={{ p }}" class="{{ button_class('secondary', 'sm') }} min-w-10">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="{{ base_url }}?page={{ page + 1 }}" class="{{ button_class('secondary', 'sm') }}" aria-label="Next page">{{ icon("chevron-right", "h-4 w-4") }}</a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{#- ---------- Confirm modal: opened by app.js for every form[data-confirm] ---------- -#}
+{% macro confirm_modal(id="confirm-modal") -%}
+<dialog id="{{ id }}" aria-labelledby="{{ id }}-title" aria-describedby="{{ id }}-message"
+        class="w-[calc(100%-2.5rem)] max-w-md rounded-2xl border border-line bg-white p-0 text-ink shadow-xl backdrop:bg-maroon-900/60 backdrop:backdrop-blur-sm">
+  <form method="dialog" class="p-6">
+    <div class="h-1 w-10 rounded-full bg-gold-500" aria-hidden="true"></div>
+    <h2 id="{{ id }}-title" class="mt-4 text-lg font-bold">Please confirm</h2>
+    <p id="{{ id }}-message" class="mt-2 text-sm text-mute"></p>
+    <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      {{ button("Cancel", type="submit", variant="secondary", attrs={"value": "cancel", "autofocus": true}) }}
+      {{ button("Confirm", type="submit", variant="primary", attrs={"value": "confirm"}) }}
+    </div>
+  </form>
+</dialog>
+{%- endmacro %}
+
+{#- ---------- Liquid glass: SVG distortion used by .liquid-glass (render once per page) ---------- -#}
+{% macro liquid_glass_defs() -%}
+<svg class="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
+  <filter id="liquid-glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2.5" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="48" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+{%- endmacro %}

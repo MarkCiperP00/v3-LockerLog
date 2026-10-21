@@ -46,8 +46,9 @@ def login():
         user = create_user(row) if row else None
         if user and user.verify_password(request.form["password"]):
             session["school_id"] = user.school_id
-            return redirect(user.dashboard_route())
-        flash("Incorrect ID number or password")
+            # Show "Welcome <name>!" in the login card, then login.js moves on to next_url
+            return render_template("login.html", welcome=user, next_url=user.dashboard_route())
+        flash("Incorrect ID number or password", "error")
     return render_template("login.html")
 
 @app.route("/logout")
@@ -73,10 +74,10 @@ def request_locker(locker_id):
     if request.method == "POST":
         try:
             rentals.submit_request(g.user, locker_id, request.form["semester_id"])
-            flash("Request submitted. Wait for the administrator's decision.")
+            flash("Request submitted. Wait for the administrator's decision.", "success")
             return redirect("/my-locker")
         except RuleError as e:
-            flash(str(e))
+            flash(str(e), "error")
     return render_template("request_form.html", locker_id=locker_id, semesters=sems,
                            rate=get_rate_per_day())
 
@@ -94,17 +95,21 @@ def fee_preview():
 @needs("view_own_locker")
 def my_locker():
     uid = g.user.school_id
-    asg = query("SELECT a.*, s.school_year, s.term FROM assignments a "
-                "JOIN semesters s USING (semester_id) "
+    asg = query("SELECT a.*, s.school_year, s.term, l.building, l.floor FROM assignments a "
+                "JOIN semesters s ON s.semester_id=a.semester_id "
+                "JOIN lockers l ON l.locker_id=a.locker_id "
                 "WHERE a.school_id=%s AND a.status IN ('Active','Expired')", (uid,), one=True)
-    pending = query("SELECT * FROM rental_requests WHERE school_id=%s AND status='Pending'", (uid,), one=True)
+    pending = query("SELECT r.*, s.school_year, s.term, l.building, l.floor FROM rental_requests r "
+                    "JOIN semesters s ON s.semester_id=r.semester_id "
+                    "JOIN lockers l ON l.locker_id=r.locker_id "
+                    "WHERE r.school_id=%s AND r.status='Pending'", (uid,), one=True)
     return render_template("my_locker.html", asg=asg, pending=pending, user=g.user)
 
 @app.route("/cancel/<request_id>", methods=["POST"])
 @needs("cancel_request")
 def cancel(request_id):
-    try: rentals.cancel_request(g.user, request_id); flash("Request cancelled.")
-    except RuleError as e: flash(str(e))
+    try: rentals.cancel_request(g.user, request_id); flash("Request cancelled.", "success")
+    except RuleError as e: flash(str(e), "error")
     return redirect("/my-locker")
 
 # ---------- Administrator ----------
@@ -133,16 +138,16 @@ def admin_decide(request_id, decision):
         if decision == "approve": rentals.approve_request(g.user, request_id)
         elif decision == "reject": rentals.reject_request(g.user, request_id)
         else: abort(404)
-        flash(f"Request {decision}d.")
+        flash(f"Request {decision}d.", "success")
     except RuleError as e:
-        flash(str(e))
+        flash(str(e), "error")
     return redirect("/admin/requests")
 
 @app.route("/admin/release/<assignment_id>", methods=["POST"])
 @needs("release_locker")
 def admin_release(assignment_id):
-    try: rentals.release_assignment(g.user, assignment_id); flash("Locker released.")
-    except RuleError as e: flash(str(e))
+    try: rentals.release_assignment(g.user, assignment_id); flash("Locker released.", "success")
+    except RuleError as e: flash(str(e), "error")
     return redirect("/admin/lockers")
 
 @app.route("/admin/settings", methods=["GET", "POST"])
@@ -161,7 +166,7 @@ def admin_settings():
                          request.form["date_start"], request.form["date_end"]))
         db.commit(); cur.close()
         rentals.log_action(g.user.school_id, "settings_changed")
-        flash("Saved.")
+        flash("Saved.", "success")
     return render_template("admin/settings.html", rate=get_rate_per_day(),
                            semesters=query("SELECT * FROM semesters ORDER BY date_start"))
 
@@ -171,8 +176,8 @@ def admin_settings():
 def maintenance():
     rentals.expire_assignments()
     if request.method == "POST":
-        try: rentals.set_maintenance_status(g.user, request.form["locker_id"], request.form["status"]); flash("Updated.")
-        except RuleError as e: flash(str(e))
+        try: rentals.set_maintenance_status(g.user, request.form["locker_id"], request.form["status"]); flash("Updated.", "success")
+        except RuleError as e: flash(str(e), "error")
     where, params = ["1=1"], []
     for col in ("building", "floor", "status"):
         if request.args.get(col):
@@ -204,13 +209,13 @@ def admin_lockers():
                     raise RuleError("Only an Available locker can be removed")
             db.commit()
             rentals.log_action(g.user.school_id, f"locker_{action}", lid)
-            flash(f"Locker {action} done.")
+            flash(f"Locker {action} done.", "success")
         except mysql.connector.IntegrityError:
             db.rollback()
-            flash("Cannot save: duplicate locker ID, or the locker already has history.")
+            flash("Cannot save: duplicate locker ID, or the locker already has history.", "error")
         except RuleError as e:
             db.rollback()
-            flash(str(e))
+            flash(str(e), "error")
         finally:
             cur.close()
         return redirect("/admin/lockers")

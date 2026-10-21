@@ -1,0 +1,203 @@
+/* Effects Tailwind cannot express: stage vignette, text-grid mask, shimmering login border. */
+:root {
+  --red-600: #8b1e2b;
+  --red-500: #a62a39;
+  --gold-300: #e3c766;
+  --gold-500: #c9a227;
+  --white: #ffffff;
+}
+
+/* ---------- Stage background ---------- */
+.stage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 50% at 50% 48%, rgba(166, 42, 57, 0.38), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(0, 0, 0, 0.35), transparent 70%);
+}
+
+/* Calmer text behind the card, clearer toward the edges (kept visible enough for the glass to refract) */
+.grid-fade {
+  -webkit-mask-image: radial-gradient(ellipse 45% 45% at 50% 50%, rgba(0, 0, 0, 0.6), #000 85%);
+          mask-image: radial-gradient(ellipse 45% 45% at 50% 50%, rgba(0, 0, 0, 0.6), #000 85%);
+}
+
+/* ---------- Shimmering glowing border ---------- */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0turn;
+  inherits: false;
+}
+
+@keyframes frame-spin {
+  to { --angle: 1turn; }
+}
+
+.login-frame {
+  --glow-opacity: 0.55;
+  --glow-blur: 20px;
+  --spin-duration: 7s;
+  position: relative;
+  isolation: isolate;
+  border-radius: 18px;
+  padding: 2px;
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.6);
+}
+
+/* The border is a 2px ring (masked), so the glass card inside stays see-through.
+   .frame-glow holds a blurred copy of the same ring. Both rings spin with the same
+   animation and start together, so they stay in sync. */
+.frame-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--red-600), var(--white), var(--gold-300), var(--red-500));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.frame-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(var(--glow-blur));
+  opacity: var(--glow-opacity);
+  transition: opacity 350ms ease, filter 350ms ease, inset 350ms ease;
+}
+.frame-glow > .frame-ring { padding: 6px; }    /* thicker ring = more light to blur */
+
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  .frame-ring {
+    background: conic-gradient(from var(--angle),
+      var(--red-600), var(--red-500), var(--white), var(--gold-300), var(--gold-500),
+      var(--red-600), var(--red-500), var(--white), var(--gold-300), var(--gold-500), var(--red-600));
+    animation: frame-spin var(--spin-duration) linear infinite;
+  }
+}
+
+.login-frame:hover,
+.login-frame:focus-within {
+  --glow-opacity: 0.95;
+  --glow-blur: 32px;
+  --spin-duration: 4s;
+}
+.login-frame:hover .frame-glow,
+.login-frame:focus-within .frame-glow {
+  inset: -4px;
+}
+
+/* ---------- Liquid-glass card inside the frame ---------- */
+/* ::before = distorted, blurred view of the stage (text grid); ::after = specular edges */
+.login-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.login-glass::before,
+.login-glass::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+.login-glass::before {
+  inset: -24px;                   /* bleed past the edges so the displacement never shows a seam */
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(46, 11, 16, 0.35));
+  -webkit-backdrop-filter: blur(3px) saturate(160%);
+          backdrop-filter: blur(3px) saturate(160%);
+  filter: url(#liquid-glass-distortion);
+}
+.login-glass::after {
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgba(255, 255, 255, 0.16), transparent 55%),
+    linear-gradient(180deg, transparent 60%, rgba(46, 11, 16, 0.25));
+  box-shadow:
+    inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+    inset -1px -1px 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+    inset 0 0 30px rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Welcome state after a correct login ---------- */
+.welcome {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 220ms ease-in, transform 220ms ease-in;
+}
+
+@keyframes welcome-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes welcome-draw { to { stroke-dashoffset: 0; } }
+@keyframes welcome-rise {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+@keyframes welcome-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes welcome-flare {
+  0%   { opacity: var(--glow-opacity); inset: 0; }
+  35%  { opacity: 1; inset: -10px; }
+  100% { opacity: var(--glow-opacity); inset: 0; }
+}
+
+.welcome-check { animation: welcome-pop 520ms var(--ease-out) both; }
+
+/* Ring (r=24 → length ≈ 151) draws first, then the tick (≈ 30) */
+.welcome-check-ring {
+  transform: rotate(-90deg);       /* start drawing from 12 o'clock */
+  transform-box: fill-box;
+  transform-origin: center;
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: welcome-draw 600ms var(--ease-out) 120ms forwards;
+}
+.welcome-check-mark {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: welcome-draw 380ms var(--ease-out) 560ms forwards;
+}
+
+.welcome-step { animation: welcome-rise 600ms var(--ease-out) both; }
+.welcome-d1 { animation-delay: 300ms; }
+.welcome-d2 { animation-delay: 400ms; }
+.welcome-d3 { animation-delay: 500ms; }
+.welcome-d4 { animation-delay: 650ms; }
+.welcome-d5 { animation-delay: 800ms; }
+
+/* login.js moves on when this bar finishes filling */
+.welcome-progress {
+  transform-origin: left center;
+  animation: welcome-fill 1600ms cubic-bezier(0.65, 0, 0.35, 1) 1000ms both;
+}
+
+.welcome.is-leaving {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.login-frame.is-success .frame-glow { animation: welcome-flare 1400ms ease-out 200ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-ring { animation: none; }
+  .frame-glow { transition-duration: 1ms; }
+
+  .welcome,
+  .welcome-check,
+  .welcome-step,
+  .welcome-progress,
+  .login-frame.is-success .frame-glow { animation: none; transition: none; }
+  .welcome-check-ring,
+  .welcome-check-mark { animation: none; stroke-dashoffset: 0; }
+}

@@ -1,25 +1,36 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, empty_state, table_card_class, table_class, th_class, td_class, row_class %}
 {% block title %}Requests – LockerLog{% endblock %}
+{% block page_title %}Pending requests{% endblock %}
+{% block page_subtitle %}No dates are typed in. On approval the system sets the dates from the semester and computes the fee.{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">Pending requests</h1>
-<p class="text-sm text-slate-500 mb-3">No dates are typed in. On approval the system sets the dates from the semester and computes the fee.</p>
-<div class="bg-white rounded shadow overflow-x-auto">
-<table class="data w-full text-sm">
-  <tr><th>User</th><th>Locker</th><th>Semester</th><th>Waiting</th><th>Decision</th></tr>
-  {% for r in requests %}
-  <tr class="border-t {{ 'bg-red-50' if r.days_waiting > 3 }}">
-    <td>{{ r.name }} ({{ r.school_id }})</td>
-    <td>{{ r.locker_id }}</td>
-    <td>{{ r.school_year }} – Sem {{ r.term }}</td>
-    <td>{{ r.days_waiting }} day(s){{ ' – FLAGGED' if r.days_waiting > 3 }}</td>
-    <td class="flex gap-2">
-      <form method="post" action="/admin/requests/{{ r.request_id }}/approve" data-confirm="Approve this request?">
-        <button class="bg-green-700 text-white px-3 py-1 rounded">Approve</button></form>
-      <form method="post" action="/admin/requests/{{ r.request_id }}/reject" data-confirm="Reject this request?">
-        <button class="bg-red-700 text-white px-3 py-1 rounded">Reject</button></form>
-    </td>
-  </tr>
-  {% else %}<tr><td colspan="5" class="text-slate-500">No pending requests.</td></tr>
-  {% endfor %}
-</table></div>
+<div class="{{ table_card_class }}">
+  {% if requests %}
+  <div class="overflow-x-auto">
+  <table class="{{ table_class }}">
+    <thead><tr><th class="{{ th_class }}">User</th><th class="{{ th_class }}">Locker</th><th class="{{ th_class }}">Semester</th><th class="{{ th_class }}">Waiting</th><th class="{{ th_class }} text-right">Decision</th></tr></thead>
+    <tbody>
+    {% for r in requests %}
+    <tr class="{{ row_class }} {{ 'bg-brand-600/[0.04]' if r.days_waiting > 3 }}">
+      <td class="{{ td_class }}"><p class="font-medium text-ink">{{ r.name }}</p><p class="font-mono text-xs text-mute">{{ r.school_id }}</p></td>
+      <td class="{{ td_class }} whitespace-nowrap font-mono">{{ r.locker_id }}</td>
+      <td class="{{ td_class }} whitespace-nowrap">{{ r.school_year }} – Sem {{ r.term }}</td>
+      <td class="{{ td_class }} whitespace-nowrap">{{ r.days_waiting }} day(s){% if r.days_waiting > 3 %} <span class="ml-1 rounded-full bg-brand-600/10 px-2 py-0.5 text-xs font-semibold text-brand-600">FLAGGED</span>{% endif %}</td>
+      <td class="{{ td_class }}">
+        <div class="flex justify-end gap-2">
+          <form method="post" action="/admin/requests/{{ r.request_id }}/approve" data-confirm="Approve this request?">
+            {{ button("Approve", size="sm") }}</form>
+          <form method="post" action="/admin/requests/{{ r.request_id }}/reject" data-confirm="Reject this request?">
+            {{ button("Reject", variant="danger", size="sm") }}</form>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    {{ empty_state("No pending requests", "New locker requests will appear here.", "Go to dashboard", "/admin", "inbox") }}
+  {% endif %}
+</div>
 {% endblock %}

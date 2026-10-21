@@ -1,8 +1,12 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="max-w-md mx-auto mt-16 text-center">
-  <h1 class="text-3xl font-bold">403</h1>
-  <p class="mt-2">You are not allowed to open this page. The attempt was recorded.</p>
-  <a href="/" class="mt-4 inline-block text-blue-700 underline">Go back</a>
+{% extends "layouts/stage.html" %}
+{% from "components/ui.html" import button %}
+{% block title %}Not allowed – LockerLog{% endblock %}
+{% block stage %}
+<div class="w-full max-w-[480px] rounded-2xl bg-white p-8 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.6)] sm:p-10">
+  <div class="h-1 w-10 rounded-full bg-gold-500" aria-hidden="true"></div>
+  <p class="mt-5 font-mono text-sm font-medium text-brand-600">Error 403</p>
+  <h1 class="mt-1 text-3xl font-bold text-ink">Access denied</h1>
+  <p class="mt-2 text-mute">You are not allowed to open this page. The attempt was recorded.</p>
+  <div class="mt-8">{{ button("Go back", href="/", size="lg", full=True) }}</div>
 </div>
 {% endblock %}

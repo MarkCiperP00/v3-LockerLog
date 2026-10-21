@@ -1,0 +1,30 @@
+{#- Building / floor / status filter (GET). Same query parameters as before. -#}
+{% from "components/ui.html" import button, input_class, label_class %}
+{#- Pass glass=true (via {% with %}) for the liquid-glass frame on the student Lockers page. -#}
+<form method="get" class="mb-6 grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-[1fr_10rem_1fr_auto] lg:items-end {{ 'liquid-glass' if glass else 'rounded-2xl border border-line bg-white shadow-sm' }}">
+  <div>
+    <label for="f-building" class="{{ label_class }}">Building</label>
+    <select id="f-building" name="building" class="{{ input_class }}">
+      <option value="">All buildings</option>
+      {% for b in ["COECSA","Sotero","JPL"] %}<option {{ "selected" if request.args.building==b }}>{{ b }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="f-floor" class="{{ label_class }}">Floor</label>
+    <input id="f-floor" name="floor" type="number" placeholder="Any" value="{{ request.args.floor or '' }}" class="{{ input_class }}">
+  </div>
+  <div>
+    <label for="f-status" class="{{ label_class }}">Status</label>
+    <select id="f-status" name="status" class="{{ input_class }}">
+      <option value="">Any status</option>
+      {% for s in ["Available","Reserved","Assigned","Expired","Under Maintenance"] %}
+        <option {{ "selected" if request.args.status==s }}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="flex gap-3">
+    {{ button("Filter", icon_name="filter", size="field") }}
+    {% if request.args.building or request.args.floor or request.args.status %}
+      {{ button("Clear", href=request.path, variant="ghost", size="field") }}
+    {% endif %}
+  </div>
+</form>

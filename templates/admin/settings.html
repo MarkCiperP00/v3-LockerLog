@@ -1,27 +1,62 @@
-{% extends "base.html" %}
-{% block title %}Settings – LockerLog{% endblock %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, input_class, label_class, help_class, card_class, table_card_class, table_class, th_class, td_class, row_class %}
+{% block title %}Semester and Rate Settings – LockerLog{% endblock %}
+{% block page_title %}Semester and rate settings{% endblock %}
+{% block page_subtitle %}Lockers are rented per semester (two per school year) and charged per day.{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-3">Settings</h1>
-<form method="post" class="bg-white rounded shadow p-4 mb-6 max-w-sm text-sm space-y-3">
-  <h2 class="font-semibold">Daily rate</h2>
-  <label>Rate per day (₱)
-    <input name="rate_per_day" type="number" step="0.01" min="0.01" value="{{ rate }}" class="block border rounded px-2 py-1 w-full"></label>
-  <p class="text-xs text-slate-500">A new rate does not change existing assignments.</p>
-  <button class="bg-blue-900 text-white px-4 py-1 rounded">Save rate</button>
-</form>
-<form method="post" class="bg-white rounded shadow p-4 mb-6 max-w-xl text-sm grid grid-cols-2 gap-3">
-  <h2 class="font-semibold col-span-2">Add or update a semester</h2>
-  <label>Semester ID<input name="semester_id" placeholder="2026-2027-1" required class="block border rounded px-2 py-1 w-full"></label>
-  <label>School year<input name="school_year" placeholder="2026-2027" required class="block border rounded px-2 py-1 w-full"></label>
-  <label>Term<select name="term" class="block border rounded px-2 py-1 w-full"><option>1</option><option>2</option></select></label>
-  <span></span>
-  <label>Start date<input name="date_start" type="date" required class="block border rounded px-2 py-1 w-full"></label>
-  <label>End date<input name="date_end" type="date" required class="block border rounded px-2 py-1 w-full"></label>
-  <button class="bg-blue-900 text-white px-4 py-1 rounded col-span-2">Save semester</button>
-</form>
-<div class="bg-white rounded shadow overflow-x-auto max-w-xl">
-<table class="data w-full text-sm">
-  <tr><th>ID</th><th>School year</th><th>Term</th><th>Start</th><th>End</th></tr>
-  {% for s in semesters %}<tr class="border-t"><td>{{ s.semester_id }}</td><td>{{ s.school_year }}</td><td>{{ s.term }}</td><td>{{ s.date_start }}</td><td>{{ s.date_end }}</td></tr>{% endfor %}
-</table></div>
+<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+  <form method="post" class="{{ card_class }} self-start">
+    <h2 class="font-semibold text-ink">Daily rate</h2>
+    <div class="mt-4">
+      <label for="rate" class="{{ label_class }}">Rate per day (₱)</label>
+      <input id="rate" name="rate_per_day" type="number" step="0.01" min="0.01" value="{{ rate }}" class="{{ input_class }}">
+      <p class="{{ help_class }}">A new rate does not change existing assignments.</p>
+    </div>
+    <div class="mt-6 flex justify-end border-t border-line pt-5">{{ button("Save rate") }}</div>
+  </form>
+
+  <form method="post" class="{{ card_class }}">
+    <h2 class="font-semibold text-ink">Add or update a semester</h2>
+    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="sem-id" class="{{ label_class }}">Semester ID</label>
+        <input id="sem-id" name="semester_id" placeholder="2026-2027-1" required class="{{ input_class }} font-mono">
+      </div>
+      <div>
+        <label for="sem-year" class="{{ label_class }}">School year</label>
+        <input id="sem-year" name="school_year" placeholder="2026-2027" required class="{{ input_class }} font-mono">
+      </div>
+      <div>
+        <label for="sem-term" class="{{ label_class }}">Term</label>
+        <select id="sem-term" name="term" class="{{ input_class }}"><option>1</option><option>2</option></select>
+      </div>
+      <div class="hidden sm:block"></div>
+      <div>
+        <label for="sem-start" class="{{ label_class }}">Start date</label>
+        <input id="sem-start" name="date_start" type="date" required class="{{ input_class }}">
+      </div>
+      <div>
+        <label for="sem-end" class="{{ label_class }}">End date</label>
+        <input id="sem-end" name="date_end" type="date" required class="{{ input_class }}">
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end border-t border-line pt-5">{{ button("Save semester") }}</div>
+  </form>
+</div>
+
+<h2 class="mb-3 mt-8 font-semibold text-ink">Semesters</h2>
+<div class="{{ table_card_class }}">
+  <div class="overflow-x-auto">
+  <table class="{{ table_class }}">
+    <thead><tr><th class="{{ th_class }}">ID</th><th class="{{ th_class }}">School year</th><th class="{{ th_class }}">Term</th><th class="{{ th_class }}">Start</th><th class="{{ th_class }}">End</th></tr></thead>
+    <tbody>
+    {% for s in semesters %}
+    <tr class="{{ row_class }}"><td class="{{ td_class }} font-mono">{{ s.semester_id }}</td><td class="{{ td_class }}">{{ s.school_year }}</td><td class="{{ td_class }}">{{ s.term }}</td><td class="{{ td_class }}">{{ s.date_start }}</td><td class="{{ td_class }}">{{ s.date_end }}</td></tr>
+    {% else %}
+    <tr><td colspan="5" class="{{ td_class }} text-mute">No semesters yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
 {% endblock %}
