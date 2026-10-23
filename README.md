@@ -2,7 +2,7 @@
 
 LockerLog is a web application for renting and tracking school lockers. Students and staff can request an available locker, administrators approve or reject requests, and maintenance staff can mark lockers as unavailable. Every action is recorded in an activity log.
 
-**Built with:** Python (Flask), Jinja2, Tailwind CSS, JavaScript, MySQL 8.0.16+
+**Built with:** Python (Flask), Jinja2, Tailwind CSS, JavaScript, MySQL 8.0.16+, HTML
 **October 2026**
 ---
 
