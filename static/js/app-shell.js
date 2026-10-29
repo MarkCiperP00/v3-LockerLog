@@ -1,4 +1,3 @@
-// Mobile navigation drawer (below the lg breakpoint).
 (() => {
   const sidebar = document.getElementById("app-sidebar");
   const openBtn = document.getElementById("nav-open");
@@ -33,7 +32,6 @@
     if (restoreFocus) openBtn.focus();
   }
 
-  // Esc closes; Tab and Shift+Tab stay inside the drawer.
   function onKey(e) {
     if (e.key === "Escape") { e.preventDefault(); close(); return; }
     if (e.key !== "Tab") return;

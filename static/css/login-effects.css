@@ -23,7 +23,7 @@
           mask-image: radial-gradient(ellipse 45% 45% at 50% 50%, rgba(0, 0, 0, 0.6), #000 85%);
 }
 
-/* ---------- Shimmering glowing border ---------- */
+/* shimering glowing border */
 @property --angle {
   syntax: "<angle>";
   initial-value: 0turn;
