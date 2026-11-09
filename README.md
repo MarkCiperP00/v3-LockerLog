@@ -84,7 +84,7 @@ Open **http://127.0.0.1:5000** in your browser (or `Ctrl + Click` the link in th
 
 ## Quick Demo
 
-1. Log in as the **Student**, choose an available locker, and submit a request.
+1. Log in as the **Student**. The campus map opens: click a building (JPL, COECSA or Sotero), then click a green locker and submit a request.
 2. Log out and log in as the **Administrator**.
 3. Open **Requests** and approve the request.
 4. Open the **Activity Log** to see the recorded actions.

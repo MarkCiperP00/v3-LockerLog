@@ -33,7 +33,7 @@
   <p class="{{ help_class }} flex gap-2">{{ icon("info", "mt-px h-4 w-4 shrink-0") }}The fee is prorated from the approval date. Payment is made at the cashier. The system does not detect payment.</p>
 
   <div class="flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:justify-end">
-    {{ button("Back to lockers", href="/lockers", variant="secondary") }}
+    {{ button("Back", href=back_url or "/campus", variant="secondary") }}
     {{ button("Submit request") }}
   </div>
 </form>

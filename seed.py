@@ -15,10 +15,14 @@ for b, (floors, n) in plan.items():
                         (f"{b[:3].upper()}-{f}{i:02d}", b, f))
 
 # DUMMY semester dates - palitan ng totoong academic calendar
-cur.executemany("REPLACE INTO semesters VALUES (%s,%s,%s,%s,%s)", [
+# Upsert (not REPLACE): REPLACE deletes the row first, which fails once requests point to it.
+for semester in [
     ("2026-2027-1", "2026-2027", 1, date(2026, 8, 17), date(2026, 12, 19)),
     ("2026-2027-2", "2026-2027", 2, date(2027, 1, 11), date(2027, 5, 29)),
-])
+]:
+    cur.execute("""INSERT INTO semesters VALUES (%s,%s,%s,%s,%s) AS new
+                   ON DUPLICATE KEY UPDATE school_year = new.school_year, term = new.term,
+                                           date_start = new.date_start, date_end = new.date_end""", semester)
 
 # Sample accounts - palitan ang passwords (dapat may capital letter at special character)
 users = [("2025-2-00001", "Sample Student", "student@lpu.test", "Student#123", "Student"),

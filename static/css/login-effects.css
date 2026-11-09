@@ -5,7 +5,39 @@
   --gold-300: #e3c766;
   --gold-500: #c9a227;
   --white: #ffffff;
+  --ring-accent: var(--white);                 /* 3rd colour in the spinning border */
+  --vignette-glow: rgba(166, 42, 57, 0.38);    /* soft light behind the card */
+  --vignette-warm: transparent;                /* optional second glow near the top */
+  --glass-shade: 46, 11, 16;                   /* RGB of the dark tint inside the glass card */
+  --glass-top: rgba(255, 255, 255, 0.14);      /* light tint at the top of the glass card */
+  --vignette-floor: rgba(0, 0, 0, 0.35);       /* shade along the bottom of the stage */
+  --frame-shadow: rgba(0, 0, 0, 0.6);          /* drop shadow under the login card */
 }
+
+/* ---------- Cream Christmas theme (login + error stage, same palette as the app) ----------
+   The Tailwind colour channels come from .theme-cream in app.css; these retint the effects:
+   burgundy / sage / candlelight border, soft glows, frosted-white glass, ink text grid. */
+.theme-cream {
+  --red-600: #761828;
+  --red-500: #8e2434;
+  --gold-300: #e8bc5c;
+  --gold-500: #c89028;
+  --ring-accent: #1d6a43;                      /* forest */
+  --vignette-glow: rgba(29, 106, 67, 0.16);
+  --vignette-warm: rgba(232, 188, 92, 0.32);
+  --vignette-floor: rgba(118, 24, 40, 0.08);
+  --glass-top: rgba(255, 255, 255, 0.58);
+  --glass-shade: 251, 246, 235;
+  --frame-shadow: rgba(24, 30, 26, 0.38);
+
+  /* read by login-grid.js */
+  --grid-ink: 24, 30, 26;
+  --grid-accent: 118, 24, 40;
+  --grid-alpha: 0.06;
+}
+/* Bolder 3px spinning border in the cream theme (the blurred glow copy keeps its own width) */
+.theme-cream .login-frame { padding: 3px; }
+.theme-cream .login-frame > .frame-ring { padding: 3px; }
 
 /* ---------- Stage background ---------- */
 .stage-vignette {
@@ -13,8 +45,24 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 50% at 50% 48%, rgba(166, 42, 57, 0.38), transparent 70%),
-    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(0, 0, 0, 0.35), transparent 70%);
+    radial-gradient(ellipse 55% 50% at 50% 48%, var(--vignette-glow), transparent 70%),
+    radial-gradient(ellipse 70% 40% at 50% -10%, var(--vignette-warm), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, var(--vignette-floor), transparent 70%);
+}
+
+/* Pixel snow (static/js/pixel-snow.js): full-stage layer behind the content */
+.pixel-snow-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pixel-snow-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Calmer text behind the card, clearer toward the edges (kept visible enough for the glass to refract) */
@@ -42,7 +90,7 @@
   isolation: isolate;
   border-radius: 18px;
   padding: 2px;
-  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 80px -24px var(--frame-shadow);
 }
 
 /* The border is a 2px ring (masked), so the glass card inside stays see-through.
@@ -54,7 +102,7 @@
   border-radius: inherit;
   padding: 2px;
   pointer-events: none;
-  background: linear-gradient(135deg, var(--red-600), var(--white), var(--gold-300), var(--red-500));
+  background: linear-gradient(135deg, var(--red-600), var(--ring-accent), var(--gold-300), var(--red-500));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -74,8 +122,8 @@
 @supports (background: conic-gradient(from 0deg, red, blue)) {
   .frame-ring {
     background: conic-gradient(from var(--angle),
-      var(--red-600), var(--red-500), var(--white), var(--gold-300), var(--gold-500),
-      var(--red-600), var(--red-500), var(--white), var(--gold-300), var(--gold-500), var(--red-600));
+      var(--red-600), var(--red-500), var(--ring-accent), var(--gold-300), var(--gold-500),
+      var(--red-600), var(--red-500), var(--ring-accent), var(--gold-300), var(--gold-500), var(--red-600));
     animation: frame-spin var(--spin-duration) linear infinite;
   }
 }
@@ -108,7 +156,7 @@
 }
 .login-glass::before {
   inset: -24px;                   /* bleed past the edges so the displacement never shows a seam */
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(46, 11, 16, 0.35));
+  background: linear-gradient(160deg, var(--glass-top), rgba(var(--glass-shade), 0.35));
   -webkit-backdrop-filter: blur(3px) saturate(160%);
           backdrop-filter: blur(3px) saturate(160%);
   filter: url(#liquid-glass-distortion);
@@ -118,7 +166,7 @@
   border-radius: inherit;
   background:
     radial-gradient(120% 60% at 0% 0%, rgba(255, 255, 255, 0.16), transparent 55%),
-    linear-gradient(180deg, transparent 60%, rgba(46, 11, 16, 0.25));
+    linear-gradient(180deg, transparent 60%, rgba(var(--glass-shade), 0.25));
   box-shadow:
     inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.45),
     inset -1px -1px 1px 0 rgba(255, 255, 255, 0.18),

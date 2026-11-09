@@ -29,7 +29,7 @@ class Borrower(User):
     def permissions(self):
         return {"view_availability", "request_locker", "cancel_request", "view_own_locker"}
     def dashboard_route(self):
-        return "/lockers"
+        return "/campus"
 
 
 class Student(Borrower):

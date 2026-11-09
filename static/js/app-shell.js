@@ -44,5 +44,7 @@
   openBtn.addEventListener("click", open);
   if (closeBtn) closeBtn.addEventListener("click", () => close());
   overlay.addEventListener("click", () => close());
-  desktop.addEventListener("change", e => { if (e.matches) close(false); });
+  // The normal sidebar is always visible on desktop; a drawer-only page keeps it as a drawer.
+  if (!sidebar.hasAttribute("data-drawer"))
+    desktop.addEventListener("change", e => { if (e.matches) close(false); });
 })();

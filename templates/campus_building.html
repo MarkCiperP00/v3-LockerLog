@@ -1,0 +1,100 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, empty_state %}
+{% block title %}{{ building.name }} lockers – LockerLog{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/campus.css') }}">{% endblock %}
+{% block page_title %}{{ building.name }} lockers{% endblock %}
+{% block page_subtitle %}{{ building.position }} · {{ counts.available }} of {{ counts.total }} lockers available{% endblock %}
+{% block page_actions %}{{ button("Back to campus map", href=url_for('campus'), variant="secondary", icon_name="chevron-left") }}{% endblock %}
+{% block content %}
+{%- set img = url_for('static', filename=cm.IMAGE) -%}
+{%- set labels = {"available": "Available", "occupied": "Occupied", "unavailable": "Unavailable"} -%}
+{%- set can_request = me and me.can("request_locker") -%}
+
+{#- ---------- Building summary: the building cut from the campus picture + counts + legend ---------- -#}
+<section class="campus-paper grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center" aria-label="{{ building.name }} summary">
+  <svg class="campus-portrait" viewBox="{{ cm.view_box(building.points) }}" role="img" aria-label="Drawing of the {{ building.name }} building">
+    <defs><clipPath id="portrait-clip"><polygon points="{{ cm.points_attr(building.points) }}"/></clipPath></defs>
+    {%- set lines = url_for('static', filename=cm.LINES) -%}
+    {%- set colors = url_for('static', filename=cm.COLOR) -%}
+    <image href="{{ lines }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}" opacity="0.16"/>
+    <g clip-path="url(#portrait-clip)">
+      <polygon points="{{ cm.points_attr(building.points) }}" fill="#fbf6eb"/>
+      <image href="{{ colors }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}"/>
+      <image href="{{ lines }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}"/>
+    </g>
+  </svg>
+
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wide text-mute">{{ building.position }}</p>
+    <h2 class="mt-0.5 text-2xl font-bold text-ink">{{ building.name }}</h2>
+
+    <dl class="mt-5 grid grid-cols-3 gap-3">
+      {% for g in cm.GROUPS %}
+      <div class="campus-stat is-{{ g }}">
+        <dt class="flex items-center gap-1.5 text-xs font-medium"><span class="campus-dot is-{{ g }}" aria-hidden="true"></span>{{ labels[g] }}</dt>
+        <dd class="mt-1 text-2xl font-bold">{{ counts[g] }}</dd>
+      </div>
+      {% endfor %}
+    </dl>
+
+    <div class="mt-5">
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-mute">Legend</h3>
+      <ul class="mt-2 space-y-1.5 text-sm text-ink/80">
+        <li class="flex items-center gap-2"><span class="campus-swatch is-available" aria-hidden="true"></span><strong class="font-semibold text-ink">Green</strong> – Available, you can request it</li>
+        <li class="flex items-center gap-2"><span class="campus-swatch is-occupied" aria-hidden="true"></span><strong class="font-semibold text-ink">Red</strong> – Occupied (reserved or rented)</li>
+        <li class="flex items-center gap-2"><span class="campus-swatch is-unavailable" aria-hidden="true"></span><strong class="font-semibold text-ink">Gray</strong> – Unavailable or under maintenance</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% if counts.total %}
+{#- ---------- Status filter (client side) ---------- -#}
+<div class="mt-8 flex flex-wrap items-center gap-2" role="group" aria-label="Show lockers" data-locker-filter>
+  <button type="button" class="campus-chip" data-filter="all" aria-pressed="true">All <span class="campus-chip-count">{{ counts.total }}</span></button>
+  {% for g in cm.GROUPS %}
+  <button type="button" class="campus-chip" data-filter="{{ g }}" aria-pressed="false">
+    <span class="campus-dot is-{{ g }}" aria-hidden="true"></span>{{ labels[g] }} <span class="campus-chip-count">{{ counts[g] }}</span>
+  </button>
+  {% endfor %}
+</div>
+
+{#- ---------- Lockers, floor by floor ---------- -#}
+<div class="mt-6 space-y-6" data-locker-floors data-filter="all">
+  {% for floor, f in floors.items() %}
+  <section class="campus-floor" aria-labelledby="floor-{{ floor }}">
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 id="floor-{{ floor }}" class="text-lg font-bold text-ink">Floor {{ floor }}</h2>
+      <p class="text-sm text-mute"><span class="font-semibold text-green-700">{{ f.available }}</span> of {{ f.total }} available</p>
+    </div>
+    <ul class="campus-locker-grid mt-4">
+      {% for l in f.lockers %}
+      {% set clickable = l.group == "available" and can_request %}
+      <li data-status="{{ l.group }}">
+        {% if clickable %}
+        <a href="/request/{{ l.locker_id }}" class="locker-cell is-{{ l.group }}" title="{{ l.locker_id }} · {{ l.status }} · click to request">
+        {% else %}
+        <div class="locker-cell is-{{ l.group }}" title="{{ l.locker_id }} · {{ l.status }}">
+        {% endif %}
+          <span class="locker-cell-top"><span class="campus-dot is-{{ l.group }}" aria-hidden="true"></span><span class="sr-only">Locker </span>{{ l.locker_id.split("-")[-1] }}</span>
+          <span class="locker-cell-status">{{ "Maintenance" if l.status == "Under Maintenance" else labels[l.group] }}</span>
+        {% if clickable %}</a>{% else %}</div>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+  <p class="campus-filter-empty hidden rounded-2xl border border-dashed border-line bg-white p-6 text-center text-sm text-mute" data-filter-empty>
+    No lockers in {{ building.name }} match this filter.
+  </p>
+</div>
+{% else %}
+<div class="mt-8 rounded-2xl border border-line bg-white">
+  {{ empty_state("No lockers yet", "This building has no lockers in the system yet.", "Back to campus map", url_for('campus'), "locker") }}
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/campus.js') }}" defer></script>
+{% endblock %}

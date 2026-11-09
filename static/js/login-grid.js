@@ -10,8 +10,18 @@
   const CELL_W = 118, CELL_H = 46;
   const FONT_SIZE = 15, FONT_GROW = 7, LIFT = 3;
   const RADIUS = 170, EASE = 0.14;
-  const BASE_ALPHA = 0.09, ALPHA_GAIN = 0.55;
-  const ROSE = [255, 214, 220], GOLD = [227, 199, 102];
+  let BASE_ALPHA = 0.09;
+  const ALPHA_GAIN = 0.55;
+  // Colours can be themed with --grid-ink / --grid-accent ("r, g, b") on the stage or an ancestor.
+  const readRgb = (name, fallback) => {
+    const parts = getComputedStyle(stage).getPropertyValue(name).split(",").map(Number);
+    return parts.length === 3 && parts.every(n => Number.isFinite(n)) ? parts : fallback;
+  };
+  const ROSE = readRgb("--grid-ink", [255, 214, 220]);
+  const GOLD = readRgb("--grid-accent", [227, 199, 102]);
+  // Resting strength can be themed with --grid-alpha (dark ink on cream needs less than light on dark)
+  const themedAlpha = parseFloat(getComputedStyle(stage).getPropertyValue("--grid-alpha"));
+  if (Number.isFinite(themedAlpha)) BASE_ALPHA = themedAlpha;
   const FONT_FAMILY = '"DM Mono", ui-monospace, monospace';
 
   const interactive =

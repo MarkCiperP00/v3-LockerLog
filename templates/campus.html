@@ -1,0 +1,98 @@
+{% extends "layouts/app.html" %}
+{#- Landing page after login: minimal hero (welcome + campus drawing) over the layout's
+    menu bar and snow; building availability cards only after scrolling. -#}
+{% set page_mode = "landing" %}
+{% from "components/ui.html" import icon, flash_messages %}
+{% block title %}Welcome – LockerLog{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/campus.css') }}">{% endblock %}
+
+{% block landing %}
+{%- set lines = url_for('static', filename=cm.LINES) -%}
+{%- set colors = url_for('static', filename=cm.COLOR) -%}
+<main id="main" class="landing">
+  <section class="landing-hero" aria-labelledby="landing-title">
+    <div class="landing-intro">
+      <h1 id="landing-title">Welcome to LockerLog</h1>
+      <p>Find, access, and manage lockers across campus — easily.</p>
+    </div>
+    {{ flash_messages() }}
+
+    {#- The drawing. Each building is its own link, cut from the same picture; the three
+        cut-outs tile the whole drawing, so there is no separate base image. -#}
+    <div class="campus-map" data-campus-map>
+      <svg class="campus-svg" viewBox="0 0 {{ cm.WIDTH }} {{ cm.HEIGHT }}" role="group" aria-label="Campus buildings">
+        <defs>
+          {#- Recolours the ink to muted burgundy for the hover highlight -#}
+          <filter id="ink-hot" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="0 0 0 0 0.46  0 0 0 0 0.094  0 0 0 0 0.157  0 0 0 1 0"/>
+          </filter>
+          {% for slug, b in cm.BUILDINGS.items() %}
+          <clipPath id="clip-{{ slug }}"><polygon points="{{ cm.points_attr(b.points) }}"/></clipPath>
+          {% endfor %}
+        </defs>
+
+        {% for slug in cm.DRAW_ORDER %}
+        {% set b = cm.BUILDINGS[slug] %}{% set s = stats[slug] %}
+        {% set pts = cm.points_attr(b.points) %}
+        <a href="{{ url_for('campus_building', slug=slug) }}" class="campus-bldg" data-building="{{ slug }}"
+           aria-label="{{ b.name }}, {{ b.position | lower }}: {{ s.available }} of {{ s.total }} lockers available">
+          <g class="campus-lift" style="--origin: {{ b.origin[0] }}px {{ b.origin[1] }}px; --lift: {{ b.lift }}px">
+            <polygon class="campus-backing" points="{{ pts }}"/>
+            <g clip-path="url(#clip-{{ slug }})">
+              <image class="campus-color" href="{{ colors }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}"/>
+              <image class="campus-ink" href="{{ lines }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}"/>
+              <image class="campus-ink-hot" href="{{ lines }}" width="{{ cm.WIDTH }}" height="{{ cm.HEIGHT }}" filter="url(#ink-hot)"/>
+            </g>
+          </g>
+          <polygon class="campus-hit" points="{{ pts }}"/>
+        </a>
+        {% endfor %}
+      </svg>
+
+      {% for slug in cm.CARD_ORDER %}
+      {% set b = cm.BUILDINGS[slug] %}
+      <span class="campus-label" data-label="{{ slug }}" style="left: {{ b.label[0] }}%; top: {{ b.label[1] }}%" aria-hidden="true">
+        <span class="campus-label-name">{{ b.name }}</span>
+        <span class="campus-label-meta">{{ stats[slug].available }} free</span>
+      </span>
+      {% endfor %}
+    </div>
+
+    <a href="#buildings" class="landing-scroll">
+      <span>Building availability</span>{{ icon("chevron-down", "h-4 w-4") }}
+    </a>
+  </section>
+
+  {#- ---------- Below the fold: availability per building ---------- -#}
+  <section id="buildings" class="landing-buildings" aria-labelledby="buildings-title">
+    <h2 id="buildings-title">Building availability</h2>
+    <p class="landing-buildings-sub">Pick a building to see every locker, floor by floor.</p>
+
+    <ul class="landing-cards">
+      {% for slug in cm.CARD_ORDER %}
+      {% set b = cm.BUILDINGS[slug] %}{% set s = stats[slug] %}
+      {% set total = s.total or 1 %}
+      <li>
+        <a href="{{ url_for('campus_building', slug=slug) }}" class="campus-pick" data-building="{{ slug }}">
+          <span class="campus-pick-head">
+            <span class="campus-pick-name">{{ b.name }}</span>
+            <span class="campus-pick-arrow" aria-hidden="true">{{ icon("arrow-right", "h-4 w-4") }}</span>
+          </span>
+          <span class="campus-pick-count"><strong>{{ s.available }}</strong> of {{ s.total }} lockers available</span>
+          <span class="campus-pick-bar" aria-hidden="true">
+            <span class="is-free" style="width: {{ (s.available / total * 100) | round(2) }}%"></span>
+            <span class="is-taken" style="width: {{ ((s.occupied + s.unavailable) / total * 100) | round(2) }}%"></span>
+          </span>
+          <span class="campus-pick-meta">{{ s.occupied }} occupied · {{ s.unavailable }} unavailable</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/campus.js') }}" defer></script>
+{% endblock %}

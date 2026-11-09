@@ -1,0 +1,306 @@
+/* Campus pages.
+   Landing (campus.html): warm cream, outline drawing with selective Christmas colour, pixel snow.
+   Building pages (campus_building.html): white paper, black ink, status green / red / gray. */
+
+/* ==========================================================================
+   Building pages
+   ========================================================================== */
+.campus-paper {
+  border: 1.5px solid rgb(var(--c-line));
+  border-radius: 1rem;
+  background: var(--cream-2, #ffffff);
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(26, 29, 41, 0.06);
+}
+@media (min-width: 640px) { .campus-paper { padding: 1.5rem; } }
+
+/* ---------- Status colours (dots, swatches, stats, locker cells) ---------- */
+.campus-dot { display: inline-block; height: 0.5rem; width: 0.5rem; flex-shrink: 0; border-radius: 999px; }
+.campus-dot.is-available   { background: #16a34a; }
+.campus-dot.is-occupied    { background: #dc2626; }
+.campus-dot.is-unavailable { background: #9ca3af; }
+
+.campus-swatch { display: inline-block; height: 1rem; width: 1.5rem; flex-shrink: 0; border: 1px solid; border-radius: 0.3rem; }
+.campus-swatch.is-available   { background: #dcfce7; border-color: #16a34a; }
+.campus-swatch.is-occupied    { background: #fee2e2; border-color: #dc2626; }
+.campus-swatch.is-unavailable { background: repeating-linear-gradient(135deg, #f3f4f6 0 4px, #d1d5db 4px 5px); border-color: #9ca3af; }
+
+.campus-stat { border: 1px solid; border-radius: 0.75rem; padding: 0.75rem; }
+.campus-stat.is-available   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.campus-stat.is-occupied    { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.campus-stat.is-unavailable { background: #f9fafb; border-color: #e5e7eb; color: #374151; }
+
+.campus-portrait { display: block; width: 100%; height: auto; max-height: 18rem; }
+
+/* ---------- Filter chips ---------- */
+.campus-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 2.5rem;
+  padding: 0 0.9rem;
+  border: 1.5px solid rgb(var(--c-line));
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1a1d29;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+.campus-chip:hover { background: #f9fafb; }
+.campus-chip:focus { outline: none; }
+.campus-chip:focus-visible { box-shadow: 0 0 0 4px rgb(var(--c-brand-600) / 0.2); }
+.campus-chip[aria-pressed="true"] { border-color: #1a1d29; background: #1a1d29; color: #ffffff; }
+.campus-chip-count { border-radius: 999px; background: rgba(26, 29, 41, 0.08); padding: 0 0.45rem; font-size: 0.75rem; }
+.campus-chip[aria-pressed="true"] .campus-chip-count { background: rgba(255, 255, 255, 0.2); }
+
+/* ---------- Floors and locker cells ---------- */
+.campus-floor {
+  border: 1.5px solid rgb(var(--c-line));
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 1.25rem;
+}
+.campus-locker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+  gap: 0.6rem;
+}
+.locker-cell {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease, background-color 180ms ease;
+}
+.locker-cell-top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.locker-cell-status { font-size: 0.6875rem; font-weight: 600; }
+.locker-cell.is-available   { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.locker-cell.is-occupied    { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.locker-cell.is-unavailable {
+  background: repeating-linear-gradient(135deg, #f9fafb 0 6px, #eceef1 6px 7px);
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+a.locker-cell:hover { transform: translateY(-2px); background: #dcfce7; box-shadow: 0 8px 16px -8px rgba(22, 101, 52, 0.5); }
+a.locker-cell:focus { outline: none; }
+a.locker-cell:focus-visible { box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #16a34a; }
+
+/* Client-side status filter (campus.js sets data-filter) */
+[data-filter="available"]   li[data-status]:not([data-status="available"]),
+[data-filter="occupied"]    li[data-status]:not([data-status="occupied"]),
+[data-filter="unavailable"] li[data-status]:not([data-status="unavailable"]) { display: none; }
+.campus-floor.is-filtered-out { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .locker-cell, .campus-chip { transition: none; }
+  a.locker-cell:hover { transform: none; }
+}
+
+
+/* ==========================================================================
+   Landing page (templates/campus.html): warm cream, outline drawing, snow.
+   Forest green = available, muted burgundy = occupied / unavailable.
+   ========================================================================== */
+/* Colours (--cream, --ink, --forest, --burgundy, ...) come from .theme-cream in app.css;
+   the menu bar and snow come from layouts/app.html. */
+
+/* ---------- Hero: welcome + drawing fill the first screen ---------- */
+.landing { position: relative; z-index: 10; }
+.landing-hero {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  padding: 5.5rem 0 1.25rem;                 /* no side padding: the drawing runs edge to edge */
+}
+@media (min-width: 640px) { .landing-hero { padding: 5.5rem 0 1.5rem; } }
+.landing-intro { max-width: 40rem; padding: 0 1rem; text-align: center; }
+@media (min-width: 640px) { .landing-intro { padding: 0 2rem; } }
+.landing-intro h1 {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.landing-intro p {
+  margin-top: 0.75rem;
+  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.125rem);
+  color: var(--ink-soft);
+}
+
+/* The drawing: full screen width, edge to edge */
+.campus-map {
+  position: relative;
+  width: 100%;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+.campus-svg { display: block; width: 100%; height: auto; overflow: hidden; }
+
+/* Each building: cream backing (so the wings cover the middle), colour, ink, burgundy ink.
+   On hover it grows a little from a point inside itself and the ink warms to burgundy. */
+.campus-bldg { cursor: pointer; outline: none; }
+.campus-backing { fill: var(--cream); }
+.campus-lift {
+  pointer-events: none;
+  transform-box: view-box;
+  transform-origin: var(--origin);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.campus-hit { fill: transparent; pointer-events: all; }
+.campus-color { opacity: 1; transition: opacity 300ms ease; }
+.campus-ink-hot { opacity: 0; transition: opacity 300ms ease; }
+.campus-bldg.is-active .campus-lift { transform: translateY(calc(var(--lift, 0px) * 0.6)) scale(1.02); }
+.campus-bldg.is-active .campus-color { opacity: 1; }
+.campus-bldg.is-active .campus-ink-hot { opacity: 0.9; }
+
+/* Building names on the drawing */
+.campus-label {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.28rem 0.7rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: rgba(251, 247, 239, 0.9);
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease, border-color 220ms ease,
+              background-color 220ms ease, box-shadow 320ms ease;
+}
+.campus-label-meta {
+  max-width: 0;
+  overflow: hidden;
+  color: var(--forest);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0;
+  transition: max-width 320ms ease, opacity 220ms ease;
+}
+.campus-label.is-active {
+  border-color: var(--burgundy);
+  background: var(--burgundy);
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgba(24, 30, 26, 0.45);
+  transform: translate(-50%, calc(-50% - 6px));
+}
+.campus-label.is-active .campus-label-meta { max-width: 6rem; opacity: 1; color: #f2cf7e; }
+@media (max-width: 639px) {
+  .campus-label { padding: 0.18rem 0.5rem; font-size: 0.6rem; letter-spacing: 0.08em; }
+  .campus-label-meta { display: none; }            /* keep tags inside a narrow screen */
+  /* Phones: draw the campus a bit larger; the far outer edges of the wings are trimmed */
+  .landing-hero { overflow-x: clip; }
+  .campus-map { width: 130%; }
+}
+.landing { overflow-x: clip; }
+
+/* Keyboard focus on a building */
+.campus-bldg:focus-visible .campus-ink-hot { opacity: 1; }
+
+/* Leaving: a short zoom toward the chosen building; the next page fades in */
+.campus-map.is-leaving { opacity: 0; transform: scale(1.03); transform-origin: var(--leave-origin, 50% 100%); }
+
+.landing-scroll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: color 200ms ease;
+}
+.landing-scroll:hover { color: var(--ink); }
+.landing-scroll:focus { outline: none; }
+.landing-scroll:focus-visible { box-shadow: 0 0 0 2px var(--burgundy); }
+.landing-scroll svg { animation: landing-nudge 2.4s ease-in-out infinite; }
+@keyframes landing-nudge { 0%, 100% { transform: none; } 50% { transform: translateY(3px); } }
+
+/* ---------- Below the fold: building availability ---------- */
+.landing-buildings {
+  margin: 0 auto;
+  max-width: 64rem;
+  padding: 4rem 1.25rem 6rem;
+  scroll-margin-top: 1rem;
+}
+@media (min-width: 640px) { .landing-buildings { padding: 5rem 2rem 7rem; } }
+.landing-buildings h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
+.landing-buildings-sub { margin-top: 0.35rem; font-size: 0.9rem; color: var(--ink-soft); }
+.landing-cards { margin-top: 1.75rem; display: grid; gap: 1rem; }
+@media (min-width: 768px) { .landing-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; } }
+
+.campus-pick {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: 0.6rem;
+  border: 1.5px solid var(--hair);
+  border-radius: 1rem;
+  background: var(--cream-2);
+  padding: 1.4rem 1.4rem 1.25rem;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease, border-color 200ms ease;
+}
+.campus-pick:focus { outline: none; }
+.campus-pick:focus-visible { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--burgundy); }
+.campus-pick:hover, .campus-pick.is-active {
+  border-color: rgba(138, 51, 64, 0.25);
+  box-shadow: 0 12px 28px -18px rgba(35, 44, 39, 0.45);
+  transform: translateY(-2px);
+}
+.campus-pick-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.campus-pick-name { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
+.campus-pick-arrow {
+  display: grid;
+  place-items: center;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  transition: background-color 200ms ease, color 200ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.campus-pick:hover .campus-pick-arrow, .campus-pick.is-active .campus-pick-arrow {
+  background: var(--burgundy);
+  color: #fff;
+  transform: translateX(2px);
+}
+.campus-pick-count { font-size: 0.875rem; color: var(--ink-soft); }
+.campus-pick-count strong { margin-right: 0.15rem; font-size: 1.5rem; font-weight: 700; color: var(--forest); }
+.campus-pick-bar { display: flex; height: 4px; overflow: hidden; border-radius: 999px; background: rgba(35, 44, 39, 0.08); }
+.campus-pick-bar .is-free { background: var(--forest); }
+.campus-pick-bar .is-taken { background: var(--burgundy); opacity: 0.75; }
+.campus-pick-meta { font-size: 0.75rem; color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .campus-map, .campus-lift, .campus-color, .campus-ink-hot, .campus-label, .campus-label-meta,
+  .campus-pick, .campus-pick-arrow { transition: none; }
+  .campus-bldg.is-active .campus-lift { transform: none; }
+  .campus-label.is-active { transform: translate(-50%, -50%); }
+  .campus-pick:hover, .campus-pick.is-active { transform: none; }
+  .campus-map.is-leaving { transform: none; }
+  .landing-scroll svg { animation: none; }
+}

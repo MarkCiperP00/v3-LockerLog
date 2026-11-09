@@ -1,9 +1,9 @@
 from functools import wraps
-from flask import Flask, render_template, request, redirect, session, flash, abort, jsonify, g
+from flask import Flask, render_template, request, redirect, session, flash, abort, jsonify, g, url_for
 import config
 from db import query, close_db, get_db
 from models import create_user
-from services import rentals
+from services import rentals, campus as campus_map
 from services.rentals import RuleError
 from services.fees import get_rate_per_day, compute_assignment
 from datetime import date
@@ -56,16 +56,37 @@ def logout():
     session.clear()
     return redirect("/login")
 
+# ---------- Campus map (landing page after login) ----------
+@app.route("/campus")
+@needs("view_availability")
+def campus():
+    rows = query("SELECT building, status, COUNT(*) AS n FROM lockers GROUP BY building, status")
+    return render_template("campus.html", cm=campus_map, stats=campus_map.summarize(rows))
+
+@app.route("/campus/<slug>")
+@needs("view_availability")
+def campus_building(slug):
+    building = campus_map.BUILDINGS.get(slug.lower())
+    if not building:
+        abort(404)
+    rows = query("SELECT * FROM lockers WHERE building=%s ORDER BY floor, locker_id", (building["name"],))
+    counts, floors = campus_map.empty_counts(), {}
+    for row in rows:
+        row["group"] = campus_map.group_of(row["status"])
+        counts[row["group"]] += 1
+        counts["total"] += 1
+        floor = floors.setdefault(row["floor"], {"lockers": [], **campus_map.empty_counts()})
+        floor["lockers"].append(row)
+        floor[row["group"]] += 1
+        floor["total"] += 1
+    return render_template("campus_building.html", cm=campus_map, slug=slug.lower(),
+                           building=building, counts=counts, floors=floors)
+
 # ---------- Borrower ----------
 @app.route("/lockers")
-@needs("view_availability")
 def lockers():
-    where, params = ["1=1"], []
-    for col in ("building", "floor", "status"):
-        if request.args.get(col):
-            where.append(f"{col}=%s"); params.append(request.args[col])
-    rows = query(f"SELECT * FROM lockers WHERE {' AND '.join(where)} ORDER BY building, floor, locker_id", params)
-    return render_template("lockers.html", lockers=rows, user=g.user)
+    # The locker list was replaced by the campus map and building pages; keep old links working.
+    return redirect("/campus")
 
 @app.route("/request/<locker_id>", methods=["GET", "POST"])
 @needs("request_locker")
@@ -78,8 +99,12 @@ def request_locker(locker_id):
             return redirect("/my-locker")
         except RuleError as e:
             flash(str(e), "error")
+    # "Back" returns to the locker's building page (or the campus map if the building is unknown)
+    loc = query("SELECT building FROM lockers WHERE locker_id=%s", (locker_id,), one=True)
+    slug = campus_map.slug_for(loc["building"]) if loc else None
+    back_url = url_for("campus_building", slug=slug) if slug else url_for("campus")
     return render_template("request_form.html", locker_id=locker_id, semesters=sems,
-                           rate=get_rate_per_day())
+                           rate=get_rate_per_day(), back_url=back_url)
 
 @app.route("/api/fee")                      # fee preview (prorated from today)
 @needs("request_locker")

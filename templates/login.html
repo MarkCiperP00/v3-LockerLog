@@ -1,6 +1,15 @@
 {% extends "layouts/stage.html" %}
 {% from "components/ui.html" import input_class, icon, liquid_glass_defs %}
 {% block title %}Log in – LockerLog{% endblock %}
+{% block stage_effects %}
+{% set snow = {
+  "color": "#5f7b8b", "lightMode": true, "variant": "snowflake", "density": 0.4, "speed": 0.8,
+  "wind": 0.2, "sway": 0.5, "flakeSize": 1, "pixelSize": 3, "depth": 0.6,
+  "brightness": 1, "glow": 0.45, "twinkle": 0.4, "opacity": 0.9,
+  "mouseInteraction": true, "intro": true
+} %}
+<div id="pixel-snow" class="pixel-snow-container" data-pixel-snow='{{ snow | tojson }}' aria-hidden="true"></div>
+{% endblock %}
 {% block stage %}
 {{ liquid_glass_defs() }}
 <div class="login-frame {{ 'is-success' if welcome }} w-full max-w-[480px]">
@@ -9,10 +18,10 @@
   <div class="login-glass p-8 sm:p-10">
     <div class="h-1 w-10 rounded-full bg-gold-500" aria-hidden="true"></div>
     {% if welcome %}
-    {% set destination = {"/lockers": "Lockers", "/admin": "your dashboard", "/maintenance": "Maintenance"}.get(next_url, "your page") %}
+    {% set destination = {"/campus": "the campus map", "/lockers": "Lockers","/admin": "your dashboard", "/maintenance": "Maintenance"}.get(next_url, "your page") %}
     {% set role_icon = {"Administrator": "dashboard", "Maintenance": "wrench"}.get(welcome.ROLE, "locker") %}
     <div id="welcome" class="welcome mt-6">
-      <span class="welcome-check grid h-14 w-14 place-items-center rounded-full bg-white/10 text-gold-300" aria-hidden="true">
+      <span class="welcome-check grid h-14 w-14 place-items-center rounded-full bg-brand-600/10 text-brand-600" aria-hidden="true">
         <svg viewBox="0 0 52 52" class="h-14 w-14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
           <circle class="welcome-check-ring" cx="26" cy="26" r="24"/>
           <path class="welcome-check-mark" d="M16 27l7 7 14-15"/>
@@ -20,40 +29,40 @@
       </span>
 
       <div role="status">
-        <p class="welcome-step welcome-d1 mt-6 text-sm font-medium text-white/75">Signed in successfully</p>
-        <h1 class="mt-1 text-3xl font-bold leading-tight text-white">
+        <p class="welcome-step welcome-d1 mt-6 text-sm font-medium text-mute">Signed in successfully</p>
+        <h1 class="mt-1 text-3xl font-bold leading-tight text-ink">
           <span class="welcome-step welcome-d2 inline-block">Welcome</span>
-          <span class="welcome-step welcome-d3 inline-block text-gold-300">{{ welcome.name }}!</span>
+          <span class="welcome-step welcome-d3 inline-block text-brand-600">{{ welcome.name }}!</span>
         </h1>
       </div>
 
       <p class="welcome-step welcome-d4 mt-4">
-        <span class="inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white/90">
-          {{ icon(role_icon, "h-4 w-4 shrink-0 text-gold-300") }}
+        <span class="inline-flex max-w-full items-center gap-2 rounded-full border border-ink/10 bg-white/60 px-3 py-1.5 text-sm text-ink/80">
+          {{ icon(role_icon, "h-4 w-4 shrink-0 text-brand-600") }}
           <span class="font-medium">{{ welcome.ROLE }}</span>
-          <span class="text-white/30" aria-hidden="true">|</span>
+          <span class="text-ink/30" aria-hidden="true">|</span>
           <span class="truncate font-mono text-xs">{{ welcome.school_id }}</span>
         </span>
       </p>
 
       <div class="welcome-step welcome-d5 mt-8">
-        <p class="text-xs text-white/75">Opening {{ destination }}…</p>
-        <div class="mt-2 h-1 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
+        <p class="text-xs text-mute">Opening {{ destination }}…</p>
+        <div class="mt-2 h-1 overflow-hidden rounded-full bg-ink/10" aria-hidden="true">
           <div id="welcome-progress" class="welcome-progress h-full rounded-full bg-gradient-to-r from-gold-500 via-brand-500 to-brand-600"></div>
         </div>
         <a href="{{ next_url }}" id="welcome-continue"
-           class="mt-6 flex h-[54px] w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-brand-500 to-brand-600 font-bold text-white shadow-md shadow-brand-600/30 transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+           class="mt-6 flex h-[54px] w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-brand-500 to-brand-600 font-bold text-white shadow-md shadow-brand-600/30 transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
           Continue {{ icon("chevron-right", "h-4 w-4") }}
         </a>
       </div>
     </div>
     {% else %}
-    <h1 class="mt-5 text-3xl font-bold text-white">Sign in</h1>
-    <p class="mt-2 text-white/75">Use your school ID number and password.</p>
+    <h1 class="mt-5 text-3xl font-bold text-ink">Sign in</h1>
+    <p class="mt-2 text-mute">Use your school ID number and password.</p>
 
     {% with msgs = get_flashed_messages() %}
       {% for m in msgs %}
-        <div role="alert" class="mt-6 flex items-start gap-2 rounded-[10px] border border-brand-500/60 bg-brand-600/40 px-4 py-3 text-sm font-medium text-white">
+        <div role="alert" class="mt-6 flex items-start gap-2 rounded-[10px] border border-brand-600/30 bg-brand-600/10 px-4 py-3 text-sm font-medium text-brand-600">
           {{ icon("alert", "mt-0.5 h-4 w-4 shrink-0") }}<span>{{ m }}</span>
         </div>
       {% endfor %}
@@ -61,14 +70,14 @@
 
     <form method="post" class="mt-6 space-y-5">
       <div>
-        <label for="school_id" class="mb-1.5 block text-sm font-medium text-white/85">School ID number</label>
+        <label for="school_id" class="mb-1.5 block text-sm font-medium text-ink/80">School ID number</label>
         <input id="school_id" name="school_id" required autofocus autocomplete="username"
                autocapitalize="characters" spellcheck="false" placeholder="2025-2-00001"
                value="{{ request.form.school_id or '' }}"
                class="{{ input_class }} placeholder:font-mono">
       </div>
       <div>
-        <label for="password" class="mb-1.5 block text-sm font-medium text-white/85">Password</label>
+        <label for="password" class="mb-1.5 block text-sm font-medium text-ink/80">Password</label>
         <div class="relative">
           <input id="password" type="password" name="password" required autocomplete="current-password"
                  class="{{ input_class }} pr-20">
@@ -76,28 +85,29 @@
                   class="absolute inset-y-0 right-1.5 my-auto h-10 rounded-lg px-3 text-sm font-semibold text-brand-600 hover:bg-brand-600/5 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/15">Show</button>
         </div>
       </div>
-      <button class="h-[54px] w-full rounded-[10px] bg-gradient-to-b from-brand-500 to-brand-600 font-bold text-white shadow-md shadow-brand-600/30 transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50 disabled:pointer-events-none disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0">Sign in</button>
+      <button class="h-[54px] w-full rounded-[10px] bg-gradient-to-b from-brand-500 to-brand-600 font-bold text-white shadow-md shadow-brand-600/30 transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 disabled:pointer-events-none disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0">Sign in</button>
     </form>
     {% endif %}
   </div>
 </div>
 
-<dl class="mt-8 grid w-full max-w-[480px] grid-cols-3 divide-x divide-white/15 rounded-2xl border border-white/15 bg-white/10 text-center backdrop-blur-sm">
+<dl class="mt-8 grid w-full max-w-[480px] grid-cols-3 divide-x divide-ink/10 rounded-2xl border border-ink/10 bg-white/50 text-center backdrop-blur-sm">
   <div class="flex flex-col-reverse px-3 py-4">
-    <dt class="mt-0.5 text-xs text-white/80">Lockers</dt>
-    <dd class="text-2xl font-bold text-white">{{ locker_count | default(210) }}</dd>
+    <dt class="mt-0.5 text-xs text-mute">Lockers</dt>
+    <dd class="text-2xl font-bold text-ink">{{ locker_count | default(210) }}</dd>
   </div>
   <div class="flex flex-col-reverse px-3 py-4">
-    <dt class="mt-0.5 text-xs text-white/80">Buildings</dt>
-    <dd class="text-2xl font-bold text-white">{{ building_count | default(3) }}</dd>
+    <dt class="mt-0.5 text-xs text-mute">Buildings</dt>
+    <dd class="text-2xl font-bold text-ink">{{ building_count | default(3) }}</dd>
   </div>
   <div class="flex flex-col-reverse px-3 py-4">
-    <dt class="mt-0.5 text-xs text-white/80">Per day</dt>
-    <dd class="text-2xl font-bold text-gold-300">₱{{ rate_per_day | default(5) }}</dd>
+    <dt class="mt-0.5 text-xs text-mute">Per day</dt>
+    <dd class="text-2xl font-bold text-brand-600">₱{{ rate_per_day | default(5) }}</dd>
   </div>
 </dl>
 {% endblock %}
 {% block scripts %}
 {{ super() }}
+<script src="{{ url_for('static', filename='js/pixel-snow.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 {% endblock %}

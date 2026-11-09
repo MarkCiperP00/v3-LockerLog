@@ -1,16 +1,14 @@
-{#- Full-screen maroon "stage" used by the login and error pages. -#}
+{#- Full-screen "stage" used by the login and error pages, in the app's cream Christmas palette. -#}
 {% extends "base.html" %}
-{% from "components/ui.html" import logo %}
-{% block body_class %}bg-maroon-900{% endblock %}
+{% block body_class %}theme-cream bg-offwhite{% endblock %}
 {% block body %}
-<main id="brand-panel" class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-b from-maroon-700 via-maroon-800 to-maroon-900">
+<main id="brand-panel" class="relative flex min-h-screen flex-col overflow-hidden bg-offwhite">
   <div class="stage-vignette" aria-hidden="true"></div>
   <canvas id="text-grid" class="grid-fade pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+  {% block stage_effects %}{% endblock %}
 
   <header class="relative z-10 px-6 pt-6 sm:px-10 sm:pt-8">
-    <a href="/" class="inline-flex rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
-      {{ logo() }}
-    </a>
+    <a href="/" class="app-brand text-2xl">LockerLog</a>
   </header>
 
   <section class="relative z-10 flex flex-1 flex-col items-center justify-center px-5 py-10">
@@ -19,7 +17,7 @@
 
   <footer class="relative z-10 flex items-center gap-3 px-6 pb-6 sm:px-10 sm:pb-8">
     <span class="h-px w-8 bg-gold-500/70" aria-hidden="true"></span>
-    <p class="text-sm text-white/80">Locker rental and tracking</p>
+    <p class="text-sm text-mute">Locker rental and tracking</p>
   </footer>
 </main>
 {% endblock %}

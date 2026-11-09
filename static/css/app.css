@@ -1,5 +1,126 @@
 /* Small custom CSS on top of Tailwind (app shell only). */
 
+/* Theme colours as RGB channels, read by the Tailwind config in base.html
+   (maroon-*, brand-*, gold-*). Override them on a wrapper to retint a page. */
+:root {
+  --c-maroon-700: 74 24 32;    /* #4a1820 */
+  --c-maroon-800: 61 17 24;    /* #3d1118 */
+  --c-maroon-900: 46 11 16;    /* #2e0b10 */
+  --c-brand-500: 166 42 57;    /* #a62a39 */
+  --c-brand-600: 139 30 43;    /* #8b1e2b */
+  --c-gold-300: 227 199 102;   /* #e3c766 */
+  --c-gold-500: 201 162 39;    /* #c9a227 */
+  --c-offwhite: 250 249 247;   /* #faf9f7 */
+  --c-ink: 26 29 41;           /* #1a1d29 */
+  --c-mute: 91 96 112;         /* #5b6070 */
+  --c-line: 217 219 225;       /* #d9dbe1 */
+}
+
+/* ---------- Cream Christmas theme: every signed-in page (layouts/app.html) ----------
+   Warm cream paper, dark forest ink, muted burgundy actions, candlelight gold, forest green
+   for the deep panels that used to be maroon. Retints every Tailwind maroon/brand/gold class. */
+.theme-cream {
+  --c-maroon-700: 34 96 64;    /* #226040 forest */
+  --c-maroon-800: 26 78 52;    /* #1a4e34 */
+  --c-maroon-900: 18 58 38;    /* #123a26 */
+  --c-brand-500: 142 36 52;    /* #8e2434 burgundy */
+  --c-brand-600: 118 24 40;    /* #761828 */
+  --c-gold-300: 232 188 92;    /* #e8bc5c gold */
+  --c-gold-500: 200 144 40;    /* #c89028 */
+  --c-offwhite: 244 236 220;   /* #f4ecdc cream */
+  --c-ink: 24 30 26;           /* #181e1a */
+  --c-mute: 78 86 80;          /* #4e5650 */
+  --c-line: 205 192 168;       /* #cdc0a8 warm outline */
+  --cream: #f4ecdc;
+  --cream-2: #fbf6eb;
+  --ink: #181e1a;
+  --ink-soft: #4e5650;
+  --forest: #1d6a43;
+  --burgundy: #761828;
+  --hair: rgba(24, 30, 26, 0.22);
+  background: var(--cream);
+}
+/* Bolder outlines on cards and tables in the theme */
+.theme-cream .rounded-2xl.border-line { border-width: 1.5px; }
+
+/* Minimal: no repeating word pattern behind the glass cards in the cream theme */
+.theme-cream .glass-backdrop::after { display: none; }
+
+/* Snow behind every page (static/js/pixel-snow.js) */
+.app-snow { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+/* ---------- Top bar: hamburger + wordmark (all signed-in pages) ---------- */
+.app-bar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+.app-bar.is-overlay { position: absolute; inset: 0 0 auto 0; }   /* landing: floats over the hero */
+@media (min-width: 640px) { .app-bar { padding: 1.5rem 2rem; } }
+.app-menu {
+  display: grid;
+  place-items: center;
+  height: 2.75rem;
+  width: 2.75rem;
+  border-radius: 999px;
+  color: var(--ink);
+  transition: background-color 200ms ease;
+}
+.app-menu:hover { background: rgba(35, 44, 39, 0.06); }
+.app-menu:focus { outline: none; }
+.app-menu:focus-visible { box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--burgundy); }
+.app-brand {
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.app-brand:focus { outline: none; }
+.app-brand:focus-visible { box-shadow: 0 0 0 3px var(--burgundy); }
+
+/* ---------- Navigation drawer (hamburger) ---------- */
+.app-drawer { visibility: hidden; transform: translateX(-100%); }
+.app-drawer[data-open="true"] { visibility: visible; transform: none; }
+.app-drawer-panel {
+  background: var(--cream-2);
+  color: var(--ink);
+  border-right: 1px solid var(--hair);
+  box-shadow: 24px 0 60px -30px rgba(35, 44, 39, 0.45);
+}
+.app-nav-link {
+  position: relative;
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.65rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.app-nav-link:hover { background: rgba(35, 44, 39, 0.05); color: var(--ink); }
+.app-nav-link:focus { outline: none; }
+.app-nav-link:focus-visible { box-shadow: 0 0 0 2px var(--burgundy); }
+.app-nav-link[aria-current="page"] { background: rgba(138, 51, 64, 0.08); color: var(--burgundy); font-weight: 600; }
+.app-nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset: 0.5rem auto 0.5rem 0;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--burgundy);
+}
+
+/* Page header on cream (title, subtitle, actions) */
+.app-header { position: relative; z-index: 10; }
+.app-main { position: relative; z-index: 10; }
+
 /* Subtle page entrance */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -29,11 +150,11 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(38% 45% at 18% 22%, rgba(166, 42, 57, 0.30), transparent 70%),
-    radial-gradient(32% 40% at 88% 28%, rgba(227, 199, 102, 0.32), transparent 70%),
-    radial-gradient(45% 50% at 62% 92%, rgba(74, 24, 32, 0.28), transparent 70%),
-    radial-gradient(30% 35% at 42% 58%, rgba(139, 30, 43, 0.14), transparent 70%),
-    #faf9f7;
+    radial-gradient(38% 45% at 18% 22%, rgb(var(--c-brand-500) / 0.18), transparent 70%),
+    radial-gradient(32% 40% at 88% 28%, rgb(var(--c-gold-300) / 0.32), transparent 70%),
+    radial-gradient(45% 50% at 62% 92%, rgb(var(--c-maroon-700) / 0.16), transparent 70%),
+    radial-gradient(30% 35% at 42% 58%, rgb(var(--c-brand-600) / 0.08), transparent 70%),
+    rgb(var(--c-offwhite));
 }
 .glass-backdrop::after {
   content: "";
@@ -53,8 +174,8 @@
   overflow: hidden;              /* clips the distorted layer's ragged edges */
   border-radius: 16px;
   box-shadow:
-    0 10px 30px -12px rgba(46, 11, 16, 0.28),
-    0 2px 6px -2px rgba(46, 11, 16, 0.10);
+    0 10px 30px -12px rgb(var(--c-maroon-900) / 0.28),
+    0 2px 6px -2px rgb(var(--c-maroon-900) / 0.10);
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease;
 }
 .liquid-glass::before,
@@ -81,7 +202,7 @@
     inset 1.5px 1.5px 1px 0 rgba(255, 255, 255, 0.85),
     inset -1px -1px 1px 0 rgba(255, 255, 255, 0.45),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35),
-    inset 0 -12px 24px -18px rgba(139, 30, 43, 0.25);
+    inset 0 -12px 24px -18px rgb(var(--c-brand-600) / 0.25);
   transition: background 200ms ease;
 }
 .liquid-glass.is-interactive:hover,
@@ -89,8 +210,8 @@
   --light: 1;
   transform: translateY(-4px);
   box-shadow:
-    0 22px 40px -16px rgba(46, 11, 16, 0.38),
-    0 4px 10px -4px rgba(46, 11, 16, 0.14);
+    0 22px 40px -16px rgb(var(--c-maroon-900) / 0.38),
+    0 4px 10px -4px rgb(var(--c-maroon-900) / 0.14);
 }
 
 /* ---------- Shimmering primary button (Request) ---------- */
@@ -118,7 +239,7 @@
 .locker-tile:nth-child(4n+3) .btn-shimmer::after { animation-delay: 320ms; }
 .locker-tile:nth-child(4n+4) .btn-shimmer::after { animation-delay: 480ms; }
 .locker-tile .btn-shimmer:hover {
-  box-shadow: 0 12px 26px -8px rgba(139, 30, 43, 0.55), 0 0 0 1px rgba(227, 199, 102, 0.45);
+  box-shadow: 0 12px 26px -8px rgb(var(--c-brand-600) / 0.55), 0 0 0 1px rgb(var(--c-gold-300) / 0.45);
   filter: brightness(1.06);
 }
 
